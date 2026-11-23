@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Standby – 4 weeks without power</title>
-<meta name="description" content="Get your household through weeks without power: a gap check, a stock calculator and plain guidance for water, warmth, food, health and communication. Works offline.">
-<meta name="theme-color" content="#15181d">
+<title>Standby – Hold the Castle: 28 nights without power</title>
+<meta name="description" content="Hold your castle for 28 nights without power: walk through your home room by room with Ylva, close the gaps, and get plain guidance for water, warmth, food, health and communication. Works offline.">
+<meta name="theme-color" content="#111a2c">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-64.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Standby">
 <style>
 /* Dark by default: saves battery on most phones. Printing switches to black on white. */
-:root{--bg:#15181d;--card:#1f242b;--ink:#eef1f4;--soft:#b3bcc7;--line:#353d47;--accent:#f2b52f;--accent-ink:#1a1400;
+:root{--bg:#111a2c;--card:#1b263b;--ink:#f3eee4;--soft:#bcc3cf;--line:#34425e;--accent:#f3b04a;--accent-ink:#1a1200;
   --red:#ff8a7a;--amber:#f5c451;--green:#7dd8a4;--r:16px;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink)}
@@ -63,10 +63,46 @@ details summary{cursor:pointer;min-height:48px;display:flex;align-items:center;f
 footer{color:var(--soft);font-size:.85em;margin-top:28px}footer a{color:var(--accent)}
 .note{border:1px dashed var(--line);border-radius:12px;padding:10px 14px;color:var(--soft);font-size:.9em}
 .print-only{display:none}
+/* castle quest */
+.hero{position:relative;margin:4px -16px 0;overflow:hidden}
+.hero img{display:block;width:100%;height:auto;aspect-ratio:1280/714;object-fit:cover}
+.hero .ht{position:absolute;left:0;right:0;top:0;padding:14px 18px 40px;background:linear-gradient(#0b1220ee,#0b122000)}
+.hero h1{margin:0;font-size:1.9em;letter-spacing:.01em;text-shadow:0 2px 6px #000}
+.hero p{margin:2px 0 0;color:var(--accent);font-weight:700;text-shadow:0 1px 4px #000}
+.meter{background:var(--card);border:2px solid var(--accent);border-radius:var(--r);padding:14px 16px;margin:14px 0}
+.meter .big{font-size:2.4em;font-weight:800;line-height:1;color:var(--accent)}
+.meter .big small{font-size:.42em;color:var(--soft);font-weight:600}
+.moons{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:10px 0 6px}
+.moons i{height:12px;border-radius:3px;background:var(--line)}.moons i.on{background:var(--accent)}
+.mapbox{position:relative;max-width:520px;margin:8px auto;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+.mapbox img{display:block;width:100%;height:auto}
+.hot{position:absolute;display:flex;align-items:flex-end;justify-content:flex-start;padding:3px;border-radius:8px;text-decoration:none;border:2px solid transparent}
+.hot:hover,.hot:focus-visible{border-color:var(--accent);background:#f3b04a22}
+.hot span{font-size:13px;line-height:1.15;font-weight:700;padding:2px 6px;border-radius:6px;background:#0b1220d9;color:var(--ink);border-left:5px solid #8a93a3}
+.st-r{--st:var(--red)}.st-a{--st:var(--amber)}.st-g{--st:var(--green)}.st-u{--st:#8a93a3}
+.hot.st-r span,.hot.st-a span,.hot.st-g span{border-left-color:var(--st)}
+.rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.room{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--st);border-radius:12px;padding:8px 10px;min-height:64px;color:var(--ink);text-decoration:none;min-width:0}
+.room b{display:block;font-size:.95em;line-height:1.2;overflow-wrap:break-word;hyphens:auto}.room small{color:var(--soft)}
+.room .i{font-size:1.4em}
+.badge{display:inline-block;font-weight:800;font-size:.8em;letter-spacing:.03em;padding:2px 10px;border-radius:999px;background:var(--st);color:#10141c}
+.who{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:12px 0}
+.who img{width:96px;height:96px;object-fit:contain;flex:none;background:#f6efe2;border-radius:12px}
+.who p{margin:2px 0}
+.roomimg{width:100%;height:auto;border-radius:var(--r);display:block;margin:8px 0;border:1px solid var(--line)}
+.crew{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.crew figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;text-align:center}
+.crew img{width:100%;height:170px;object-fit:contain;background:#f6efe2;border-radius:10px}
+.crew figcaption{text-align:left;font-size:.9em;color:var(--soft)}.crew figcaption b{color:var(--ink);display:block;font-size:1.05em}
+.wide{grid-column:1/-1}.wide img{height:auto;object-fit:cover}
+.qroom{display:flex;gap:10px;align-items:center;margin:26px 0 4px}.qroom img{width:84px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.qroom h2{margin:0}
+.knock{text-align:center}.knock img{width:160px;height:160px;object-fit:contain;background:#f6efe2;border-radius:14px}
+@media (prefers-reduced-motion:no-preference){.knock img{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media print{
   :root{--bg:#fff;--card:#fff;--ink:#000;--soft:#333;--line:#999;--accent:#000;color-scheme:light}
-  body{font-size:12pt}header,.langs,.back,.actions,footer,.noprint,nav.tiles{display:none!important}
+  body{font-size:12pt}header,.langs,.back,.actions,footer,.noprint,nav.tiles,.hero,.mapbox,.who,.knock,.roomimg,.qroom img{display:none!important}
   .card,.gap{break-inside:avoid}.print-only{display:block}section.sec{break-before:page}section.sec:first-of-type{break-before:auto}
 }
 </style>
@@ -74,7 +110,7 @@ footer{color:var(--soft);font-size:.85em;margin-top:28px}footer a{color:var(--ac
 <body>
 <div class="wrap">
   <header>
-    <img src="icons/icon.svg" alt="">
+    <img src="icons/icon-192.png" alt="">
     <a class="name" href="#">Standby</a>
     <div class="langs" role="group" aria-label="Language">
       <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="de" lang="de">DE</button>
@@ -88,6 +124,7 @@ footer{color:var(--soft);font-size:.85em;margin-top:28px}footer a{color:var(--ac
 </div>
 
 <script src="content.js"></script>
+<script src="quest.js"></script>
 <script>
 "use strict";
 /* ---------- texts ---------- */
@@ -95,7 +132,7 @@ const UI = {
   en: {
     tagline: "4 weeks without power. What you need, what to do, plainly.",
     homeIntro: "For a healthy household with children or without. Spartan, not prepper. Start with the check, then fix the gaps one by one.",
-    check: "My check", checkSub: "20 questions → your gap list",
+    check: "Walk the castle", checkSub: "20 questions → your gap list",
     ready: "Stock calculator", readySub: "Amounts for your household",
     card: "Communication card", cardSub: "Meeting point, channel, who to check on",
     all: "Everything to print", allSub: "Paper works when the phone is empty",
@@ -120,7 +157,7 @@ const UI = {
   de: {
     tagline: "4 Wochen ohne Strom. Was du brauchst, was zu tun ist, klar und einfach.",
     homeIntro: "Für einen gesunden Haushalt mit oder ohne Kinder. Spartanisch, nicht Prepper. Fang mit dem Check an und schließe dann die Lücken eine nach der anderen.",
-    check: "Mein Check", checkSub: "20 Fragen → deine Lückenliste",
+    check: "Durch die Burg gehen", checkSub: "20 Fragen → deine Lückenliste",
     ready: "Vorrats-Rechner", readySub: "Mengen für deinen Haushalt",
     card: "Kommunikationskarte", cardSub: "Treffpunkt, Kanal, nach wem wir schauen",
     all: "Alles zum Drucken", allSub: "Papier geht, wenn der Akku leer ist",
@@ -150,10 +187,14 @@ const store = (() => { let d = {}; try { d = JSON.parse(localStorage.getItem(KEY
 store.ans = store.ans || {}; store.card = store.card || {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
 let lang = store.lang || ((navigator.languages || [navigator.language || "en"]).map(l => l.slice(0, 2).toLowerCase()).find(l => UI[l]) || "en");
-const t = k => UI[lang][k] || UI.en[k] || k;
+const t = k => UI[lang][k] || QUEST[lang][k] || UI.en[k] || QUEST.en[k] || k;
 const L = o => (o && (o[lang] || o.en)) || "";
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const SEC = Object.fromEntries(SECTIONS.map(s => [s.id, s]));
+const ROOM = Object.fromEntries(ROOMS.map(r => [r.id, r]));
+const SEC_ROOM = { water: "well", toilet: "well", food: "kitchen", warmth: "hearth", tech: "workshop", health: "herbs", comms: "hall", mind: "bard", light: "lantern" };
+const LN = v => typeof v === "string" ? v : L(v);
+const img = (name, alt, cls) => `<img src="art/${name}.webp" alt="${esc(alt || "")}"${cls ? ` class="${cls}"` : ""} loading="lazy" decoding="async">`;
 
 /* ---------- questionnaire ---------- */
 const yn = [{ v: "yes", en: "Yes", de: "Ja" }, { v: "no", en: "No", de: "Nein" }];
@@ -201,7 +242,7 @@ const Q = [
 ];
 
 function gaps(a) {
-  const out = [], add = (sec, s, en, de) => out.push({ sec, s, en, de });
+  const out = [], add = (sec, s, en, de, room) => out.push({ sec, s, en, de, room: room || SEC_ROOM[sec] });
   const people = Math.max(1, (+a.adults || 0) + (+a.kids || 0)), days = +a.days || 28;
   const dEn = n => n + (n === 1 ? " day" : " days"), dDe = n => n + (n === 1 ? " Tag" : " Tage");
   // Water: BBK 2 L/person/day. Target 14 days stored + a way to treat water.
@@ -221,8 +262,8 @@ function gaps(a) {
   else if (a.heat === "wood") add("warmth", a.sleep === "all" ? "g" : "a", "Your stove works without power. Make sure you have dry wood for the full period.", "Dein Ofen läuft ohne Strom. Genug trockenes Holz für den ganzen Zeitraum bereithalten.");
   if (!heatOff && a.sleep && a.sleep !== "all") add("warmth", "a", "Get a warm sleeping bag or thick duvet for everyone.", "Warmen Schlafsack oder dicke Decke für alle besorgen.");
   // Safety
-  if (a.safety === "none") add("tech", "r", "Get a battery CO alarm (~€25) and a fire blanket (~€15). Never use grills, gas heaters or generators indoors.", "CO-Melder mit Batterie (~25 €) und Löschdecke (~15 €) besorgen. Nie Grill, Gasheizer oder Generator in Innenräumen.");
-  else if (a.safety === "one") add("tech", "a", "Complete the pair: battery CO alarm + fire blanket or extinguisher.", "Paar vervollständigen: CO-Melder + Löschdecke oder Feuerlöscher.");
+  if (a.safety === "none") add("tech", "r", "Get a battery CO alarm (~€25) and a fire blanket (~€15). Never use grills, gas heaters or generators indoors.", "CO-Melder mit Batterie (~25 €) und Löschdecke (~15 €) besorgen. Nie Grill, Gasheizer oder Generator in Innenräumen.", "gate");
+  else if (a.safety === "one") add("tech", "a", "Complete the pair: battery CO alarm + fire blanket or extinguisher.", "Paar vervollständigen: CO-Melder + Löschdecke oder Feuerlöscher.", "gate");
   // Toilet
   if (a.toilet === "no") add("toilet", "r", "Prepare an emergency toilet: bucket, strong bin bags, cat litter or sawdust (~€15). Plus soap, wet wipes, disinfectant.", "Nottoilette vorbereiten: Eimer, feste Müllbeutel, Katzenstreu oder Sägespäne (~15 €). Dazu Seife, Feuchttücher, Desinfektion.");
   // Food (BBK per person per 10 days: 3.5 kg grains, 4.0 kg veg/pulses, 2.4 kg fruit/nuts)
@@ -236,8 +277,8 @@ function gaps(a) {
   if (a.cook === "no") add("food", "a", "Get a camping stove + gas cartridges (~€30). Use it only with fresh air.", "Campingkocher + Gaskartuschen besorgen (~30 €). Nur bei guter Lüftung benutzen.");
   // Light, info, power
   if (a.light === "no") add("light", "a", "A headlamp per person + spare batteries. Safer than candles.", "Eine Stirnlampe pro Person + Ersatzbatterien. Sicherer als Kerzen.");
-  if (a.radio === "no") add("light", "a", "Get a crank or battery radio (~€25). Radio keeps broadcasting when phones fail.", "Kurbel- oder Batterieradio besorgen (~25 €). Radio sendet weiter, wenn Handys ausfallen.");
-  if (a.cash === "no") add("light", "a", "Keep some cash at home in small notes.", "Etwas Bargeld in kleinen Scheinen zu Hause haben.");
+  if (a.radio === "no") add("light", "a", "Get a crank or battery radio (~€25). Radio keeps broadcasting when phones fail.", "Kurbel- oder Batterieradio besorgen (~25 €). Radio sendet weiter, wenn Handys ausfallen.", "signal");
+  if (a.cash === "no") add("light", "a", "Keep some cash at home in small notes.", "Etwas Bargeld in kleinen Scheinen zu Hause haben.", "gate");
   if (a.power === "none") add("light", "r", "Get a 20,000 mAh power bank (~€25) and keep it charged.", "Powerbank mit 20.000 mAh besorgen (~25 €) und geladen halten.");
   else if (a.power === "small" || (a.power === "big" && days > 10)) add("light", "a", "For weeks, a power bank alone won't do. A foldable 20–30 W solar panel (~€60) keeps phone and lamps going.", "Für Wochen reicht eine Powerbank nicht. Ein faltbares 20–30-W-Solarpanel (~60 €) hält Handy und Lampen am Laufen.");
   // Health
@@ -246,7 +287,7 @@ function gaps(a) {
   // People & comms
   if (a.neigh === "0") add("comms", "r", "Introduce yourself to three neighbours. Swap names, flat numbers and what each of you can do.", "Stell dich drei Nachbarn vor. Namen, Wohnungen und Fähigkeiten austauschen.");
   else if (a.neigh === "1") add("comms", "a", "Get to know one or two more neighbours, and agree on a meeting place and time.", "Lerne ein, zwei Nachbarn mehr kennen und vereinbart Treffpunkt und Uhrzeit.");
-  if (a.meet === "no") add("comms", "a", "Look up your town's emergency point (Notfall-Treffpunkt / Kat-Leuchtturm) and write it on your communication card.", "Notfall-Treffpunkt / Kat-Leuchtturm deiner Gemeinde nachschlagen und auf die Kommunikationskarte schreiben.");
+  if (a.meet === "no") add("comms", "a", "Look up your town's emergency point (Notfall-Treffpunkt / Kat-Leuchtturm) and write it on your communication card.", "Notfall-Treffpunkt / Kat-Leuchtturm deiner Gemeinde nachschlagen und auf die Kommunikationskarte schreiben.", "signal");
   if (a.tools === "no") add("tech", "a", "Put together a small toolbox and find the main water valve, fuse box and gas valve today.", "Kleinen Werkzeugkasten zusammenstellen und heute Hauptwasserhahn, Sicherungskasten und Gashahn suchen.");
   if (a.mind === "no") add("mind", "a", "Books, cards and board games. A daily routine helps adults and children alike.", "Bücher, Karten, Brettspiele. Ein fester Tagesablauf hilft Großen und Kleinen.");
   const rank = { r: 0, a: 1, g: 2 }, prio = ["water", "warmth", "tech", "toilet", "food", "light", "health", "comms", "mind"];
@@ -285,16 +326,122 @@ const app = document.getElementById("app");
 const backBtn = () => `<p class="back"><a class="btn" href="#">${t("back")}</a></p>`;
 const tile = (href, icon, title, sub, big) => `<a class="tile${big ? " big" : ""}" href="${href}"><span class="i" aria-hidden="true">${icon}</span><b>${esc(title)}</b><span>${esc(sub)}</span></a>`;
 
+/* ---------- castle: status and nights ---------- */
+const answered = id => store.ans[id] !== undefined && store.ans[id] !== "";
+function roomStatus(id, list) {
+  const g = (list || gaps(store.ans)).filter(x => x.room === id);
+  if (!ROOM_Q[id].some(answered)) return "u";
+  if (g.some(x => x.s === "r")) return "r";
+  if (g.some(x => x.s === "a")) return "a";
+  return ROOM_Q[id].every(answered) ? "g" : "u";
+}
+// Nights the castle holds: the shortest of water, food, warmth and toilet. Rough on purpose.
+function nights() {
+  const a = store.ans, people = Math.max(1, (+a.adults || 1) + (+a.kids || 0)), parts = [];
+  if (answered("water_l") || answered("treat")) {
+    const stored = Math.floor((+a.water_l || 0) / (people * 2));
+    const renew = a.treat === "filter" || (a.treat === "boil" && a.cook === "yes");
+    parts.push(["well", renew ? 28 : stored]);
+  }
+  if (answered("food")) parts.push(["kitchen", +a.food]);
+  if (answered("heat")) parts.push(["hearth", a.heat === "wood" ? 28 : a.sleep === "all" ? 28 : a.sleep === "some" ? 10 : 3]);
+  if (answered("toilet")) parts.push(["well", a.toilet === "yes" ? 28 : 7]);
+  if (!parts.length) return null;
+  parts.sort((x, y) => x[1] - y[1]);
+  return { n: Math.min(28, Math.max(0, parts[0][1])), weak: parts[0][1] < 28 ? parts[0][0] : null };
+}
+function weakestRoom(list) {
+  const nt = nights(); if (nt && nt.weak) return nt.weak;
+  const rank = { r: 0, a: 1 };
+  const bad = ROOMS.map(r => [r.id, roomStatus(r.id, list)]).filter(x => x[1] in rank).sort((x, y) => rank[x[1]] - rank[y[1]]);
+  return bad.length ? bad[0][0] : null;
+}
+function meterHTML(list) {
+  const nt = nights(), w = weakestRoom(list), ready = ROOMS.filter(r => roomStatus(r.id, list) === "g").length;
+  if (!nt) return `<div class="meter"><p style="margin:0 0 10px">${esc(t("unknown"))}</p><a class="btn primary" href="#check">${esc(t("walk"))} →</a></div>`;
+  let h = `<div class="meter" role="status"><div>${esc(t("holds"))}</div><div class="big">${nt.n} <small>${esc(t("nights"))} ${esc(t("of"))}</small></div>
+    <div class="moons" aria-hidden="true">${Array.from({ length: 28 }, (_, k) => `<i class="${k < nt.n ? "on" : ""}"></i>`).join("")}</div>
+    <p class="hint">${ready} / ${ROOMS.length} ${esc(t("roomsReady"))}. ${esc(t("estimate"))}</p>`;
+  if (w) h += `<p style="margin:8px 0">${esc(t("weakest"))} <b>${ROOM[w].icon} ${esc(L(ROOM[w].t))}</b></p><a class="btn primary" href="#room/${w}">${esc(t("fixNext"))} →</a>`;
+  else h += `<p>${esc(t("allReady"))}</p>`;
+  return h + `</div>`;
+}
+const stLabel = st => t("st_" + st);
+function mapHTML(list) {
+  let h = `<div class="mapbox">${img("castle-map", "")}`;
+  for (const r of ROOMS) {
+    const [x, y, w, hh] = r.box, st = roomStatus(r.id, list);
+    h += `<a class="hot st-${st}" href="#room/${r.id}" style="left:${x}%;top:${y}%;width:${w}%;height:${hh}%" tabindex="-1" aria-hidden="true"><span>${esc(L(r.t).replace(/^(The|Der|Die|Das) /, ""))}</span></a>`;
+  }
+  return h + `</div>`;
+}
+function roomsListHTML(list) {
+  return `<nav class="rooms" aria-label="${esc(t("roomsH"))}">${ROOMS.map(r => { const st = roomStatus(r.id, list);
+    return `<a class="room st-${st}" href="#room/${r.id}"><span class="i" aria-hidden="true">${r.icon}</span><span><b>${esc(L(r.t))}</b><small>${esc(stLabel(st))}</small></span></a>`; }).join("")}</nav>`;
+}
 function viewHome() {
-  let h = `<h1>${esc(t("tagline"))}</h1><p class="lead">${esc(t("homeIntro"))}</p><nav class="tiles" aria-label="Sections">`;
-  h += tile("#check", "✅", t("check"), t("checkSub"), true);
+  const list = gaps(store.ans);
+  let h = `<div class="hero">${img("poster", "Ylva and her dog Brumm on the battlements of her tower at dusk, lantern raised")}<div class="ht"><h1>${esc(t("hero"))}</h1><p>${esc(t("heroSub"))}</p></div></div>`;
+  h += `<p class="lead" style="margin-top:12px">${esc(t("intro"))}</p><p class="hint">${esc(t("homeIntro"))}</p>`;
+  h += meterHTML(list);
+  h += `<h2>${esc(t("mapH"))}</h2><p class="hint">${esc(t("mapHint"))}</p>` + mapHTML(list) + roomsListHTML(list);
+  h += `<div class="card" id="knock"><h2>🌙 ${esc(t("tonight"))}</h2><div id="knockOut" aria-live="polite"></div><div class="actions"><button type="button" class="primary" id="knockBtn">${esc(t("tonightBtn"))}</button></div></div>`;
+  h += `<h2>${esc(t("more"))}</h2><nav class="tiles" aria-label="${esc(t("more"))}">`;
+  h += tile("#check", "🏰", t("walk"), t("walkSub"), true);
+  h += tile("#now", SEC.now.icon, t("now"), t("nowSub"));
   h += tile("#ready", "🧮", t("ready"), t("readySub"));
-  h += tile("#now", SEC.now.icon, L(SEC.now.t), L(SEC.now.lead));
-  for (const s of SECTIONS) if (s.id !== "now") h += tile("#" + s.id, s.icon, L(s.t), L(s.lead));
   h += tile("#card", "🗒", t("card"), t("cardSub"));
+  h += tile("#crew", "🐺", t("crew"), t("crewSub"));
   h += tile("#all", "🖨", t("all"), t("allSub"));
   h += `</nav><details class="card"><summary>${esc(t("install"))}</summary><p>${esc(t("inst1"))}</p><p>${esc(t("inst2"))}</p><p>${esc(t("inst3"))}</p></details>`;
   return h;
+}
+let night = 0;
+function knock() {
+  const rs = ROOMS.filter(r => r.who), r = rs[Math.floor(Math.random() * rs.length)], v = VISITORS[r.who], st = roomStatus(r.id);
+  night = night ? Math.min(28, night + 1 + Math.floor(Math.random() * 3)) : 1 + Math.floor(Math.random() * 5);
+  const ok = st === "g";
+  document.getElementById("knockOut").innerHTML = `<div class="knock">${img("v-" + r.who, L(v.n))}<p><b>${esc(t("nightN"))} ${night}:</b> ${esc(L(v.n).replace(/^./, c => c.toUpperCase()))} → ${esc(L(r.t))}</p></div>
+    <p>${esc(L(ok ? v.out : v.inn))}</p><p><b>${esc(t(ok ? "chased" : "inside"))}</b></p>${ok ? "" : `<p><a class="btn" href="#room/${r.id}">${esc(t("fixIt"))}: ${esc(L(r.t))} →</a></p>`}`;
+  document.getElementById("knockBtn").textContent = t("another");
+}
+function viewRoom(id) {
+  const r = ROOM[id], list = gaps(store.ans), st = roomStatus(id, list), idx = ROOMS.indexOf(r);
+  let h = `<h1><span aria-hidden="true">${r.icon}</span> ${esc(L(r.t))}</h1><p class="lead">${esc(L(r.lead))}</p>`;
+  h += img("room-" + id, L(r.t), "roomimg");
+  h += `<p id="rstatus"><span class="badge st-${st}">${esc(stLabel(st))}</span></p><div id="rwho">${whoHTML(r, st)}</div>`;
+  h += `<h2>${esc(t("checkRoom"))}</h2><form id="qform">${ROOM_Q[id].map(qField).join("")}</form>`;
+  h += `<h2>${esc(t("roomGaps"))}</h2><div id="rgaps" aria-live="polite">${roomGapsHTML(id, list)}</div>`;
+  h += `<h2>${esc(t("knowH"))}</h2>` + [...new Set(r.sec)].map((sid, k) => `<details class="card"${k ? "" : " open"}><summary>${SEC[sid].icon} ${esc(L(SEC[sid].t))}</summary>${SEC[sid].parts.map(p => `<h2>${esc(L(p.h))}</h2><ul>${(p.li[lang] || p.li.en).map(x => `<li>${esc(x)}</li>`).join("")}</ul>`).join("")}<p class="src">${t("sources")}: ${SEC[sid].src.map(esc).join(" · ")}</p></details>`).join("");
+  h += `<div class="actions">`;
+  if (idx < ROOMS.length - 1) h += `<a class="btn primary" href="#room/${ROOMS[idx + 1].id}">${esc(t("nextRoom"))} ${ROOMS[idx + 1].icon} ${esc(L(ROOMS[idx + 1].t))} ↑</a>`;
+  if (idx > 0) h += `<a class="btn" href="#room/${ROOMS[idx - 1].id}">${esc(t("prevRoom"))} ${esc(L(ROOMS[idx - 1].t))} ↓</a>`;
+  return h + `</div>`;
+}
+function whoHTML(r, st) {
+  const ok = st === "g";
+  if (r.who) { const v = VISITORS[r.who]; return `<div class="who st-${st}">${img("v-" + r.who, L(v.n))}<div><p><b>${esc(L(v.n).replace(/^./, c => c.toUpperCase()))}</b> · ${esc(t("standsFor"))} ${esc(L(v.risk))}</p><p>${esc(L(ok ? v.out : st === "u" ? v.inn : v.inn))}</p>${ok ? `<p><b>${esc(t("chased"))}</b></p>` : ""}</div></div>`; }
+  const hp = HELPERS[r.helper];
+  return `<div class="who">${img(hp.img, LN(hp.n))}<div><p><b>${esc(LN(hp.n))}</b></p><p>${esc(L(ok ? hp.ok : hp.weak))}</p></div></div>`;
+}
+function roomGapsHTML(id, list) {
+  const g = list.filter(x => x.room === id), st = roomStatus(id, list);
+  if (st === "u") return `<p class="hint">${esc(t("unanswered"))}</p>`;
+  if (!g.length || g.every(x => x.s === "g")) return (g.length ? gapsHTML(g) : "") + `<p>${esc(t("noGaps"))}</p>`;
+  return gapsHTML(g);
+}
+const gapsHTML = g => g.map(x => `<div class="gap ${x.s}"><span class="tag">${t(x.s.toUpperCase())}</span><p>${esc(x[lang] || x.en)}</p></div>`).join("");
+function viewCrew() {
+  let h = `<h1>${esc(t("crew"))}</h1><div class="crew">`;
+  h += `<figure>${img("c-ylva", "Ylva")}<figcaption><b>Ylva</b>${esc(t("ylvaTxt"))}</figcaption></figure>`;
+  h += `<figure>${img("c-brumm", "Brumm")}<figcaption><b>Brumm</b>${esc(t("brummTxt"))}</figcaption></figure>`;
+  h += `<figure>${img("c-oma-ilse", "Oma Ilse")}<figcaption><b>Oma Ilse</b>${esc(t("omaTxt"))}</figcaption></figure>`;
+  h += `<figure>${img("v-gang", "")}<figcaption><b>${esc(L(VISITORS.gang.n).replace(/^./, c => c.toUpperCase()))}</b>${esc(L(VISITORS.gang.out))}</figcaption></figure>`;
+  h += `<figure class="wide">${img("hillfolk", LN(HELPERS.folk.n))}<figcaption><b>${esc(LN(HELPERS.folk.n))}</b>${esc(t("folkTxt"))}</figcaption></figure></div>`;
+  h += `<h2>${esc(t("visitorsH"))}</h2><p class="lead">${esc(t("visitorsLead"))}</p><div class="crew">`;
+  for (const r of ROOMS.filter(r => r.who)) { const v = VISITORS[r.who];
+    h += `<figure>${img("v-" + r.who, L(v.n))}<figcaption><b>${esc(L(v.n).replace(/^./, c => c.toUpperCase()))}</b>${esc(t("standsFor"))} ${esc(L(v.risk))} · <a href="#room/${r.id}" style="color:var(--accent)">${esc(L(r.t))}</a></figcaption></figure>`; }
+  return h + `</div>`;
 }
 function sectionHTML(s) {
   let h = `<section class="sec" id="s-${s.id}"><h1><span aria-hidden="true">${s.icon}</span> ${esc(L(s.t))}</h1><p class="lead">${esc(L(s.lead))}</p>`;
@@ -302,23 +449,28 @@ function sectionHTML(s) {
   h += `<div class="src"><b>${t("sources")}</b> (${t("checked")} ${CHECKED})<ul>${s.src.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div></section>`;
   return h;
 }
+const QBY = Object.fromEntries(Q.filter(q => q.id).map(q => [q.id, q]));
+function qField(id) {
+  const q = QBY[id];
+  if (store.ans[q.id] === undefined && q.def !== undefined) store.ans[q.id] = String(q.def);
+  const hint = q.hint ? `<p class="hint">${esc(L(q.hint))}</p>` : "";
+  if (q.type === "num") return `<fieldset><legend><label for="q-${q.id}">${esc(L(q))}</label></legend>${hint}<input id="q-${q.id}" name="${q.id}" type="number" inputmode="numeric" min="${q.min}" step="1" value="${esc(store.ans[q.id] ?? "")}"></fieldset>`;
+  return `<fieldset><legend>${esc(L(q))}</legend>${hint}${q.opts.map(o => `<label class="opt"><input type="radio" name="${q.id}" value="${o.v}"${store.ans[q.id] === o.v ? " checked" : ""}> ${esc(L(o))}</label>`).join("")}</fieldset>`;
+}
 function viewCheck() {
-  let h = `<h1>${esc(t("check"))}</h1><p class="lead">${esc(t("checkLead"))}</p><form id="qform">`;
-  for (const q of Q) {
-    if (q.group) { h += `<h2>${esc(L(q.group))}</h2>`; continue; }
-    if (store.ans[q.id] === undefined && q.def !== undefined) store.ans[q.id] = String(q.def);
-    const hint = q.hint ? `<p class="hint">${esc(L(q.hint))}</p>` : "";
-    if (q.type === "num") h += `<fieldset><legend><label for="q-${q.id}">${esc(L(q))}</label></legend>${hint}<input id="q-${q.id}" name="${q.id}" type="number" inputmode="numeric" min="${q.min}" step="1" value="${esc(store.ans[q.id] ?? "")}"></fieldset>`;
-    else h += `<fieldset><legend>${esc(L(q))}</legend>${hint}${q.opts.map(o => `<label class="opt"><input type="radio" name="${q.id}" value="${o.v}"${store.ans[q.id] === o.v ? " checked" : ""}> ${esc(L(o))}</label>`).join("")}</fieldset>`;
-  }
+  let h = `<h1>🏰 ${esc(t("walk"))}</h1><p class="lead">${esc(t("checkLead"))}</p><form id="qform">`;
+  h += `<div class="qroom"><img src="art/c-ylva.webp" alt="" style="width:56px;object-fit:contain;background:#f6efe2"><h2>${esc(t("householdH"))}</h2></div><p class="hint">${esc(t("householdSay"))}</p>`;
+  h += ["adults", "kids", "days"].map(qField).join("");
+  for (const r of ROOMS) h += `<div class="qroom"><img src="art/room-${r.id}.webp" alt="" loading="lazy"><h2>${r.icon} ${esc(L(r.t))}</h2></div><p class="hint">${esc(L(r.lead))}</p>` + ROOM_Q[r.id].map(qField).join("");
   h += `<div class="actions"><button class="primary" type="submit">${esc(t("showGaps"))}</button></div></form><section id="result" aria-live="polite"></section>`;
   return h;
 }
 function resultHTML() {
   const list = gaps(store.ans), c = s => list.filter(x => x.s === s).length;
-  let h = `<h2>${esc(t("gapsH"))}</h2><div class="sum"><span class="chip">${t("R")}: ${c("r")}</span><span class="chip">${t("A")}: ${c("a")}</span><span class="chip">${t("G")}: ${c("g")}</span></div>`;
+  let h = `<h2>${esc(t("gapsH"))}</h2>` + meterHTML(list) + `<div class="sum"><span class="chip">${t("R")}: ${c("r")}</span><span class="chip">${t("A")}: ${c("a")}</span><span class="chip">${t("G")}: ${c("g")}</span></div>`;
   if (!c("r") && !c("a")) h += `<p>${esc(t("allok"))}</p>`;
-  h += list.map(x => `<div class="gap ${x.s}"><span class="tag">${t(x.s.toUpperCase())} · ${esc(L(SEC[x.sec].t))}</span><p>${esc(x[lang] || x.en)}</p><p class="noprint"><a href="#${x.sec}">${esc(L(SEC[x.sec].t))} →</a></p></div>`).join("");
+  h += list.map(x => { const r = ROOM[x.room], v = r.who && x.s !== "g" ? VISITORS[r.who] : null;
+    return `<div class="gap ${x.s}"><span class="tag">${t(x.s.toUpperCase())} · ${r.icon} ${esc(L(r.t))}</span>${v ? `<p class="hint">${esc(L(v.n).replace(/^./, c => c.toUpperCase()))}: ${esc(L(v.risk))}</p>` : ""}<p>${esc(x[lang] || x.en)}</p><p class="noprint"><a href="#room/${r.id}">${esc(L(r.t))} →</a></p></div>`; }).join("");
   h += `<div class="actions"><button type="button" onclick="window.print()">${esc(t("print"))}</button><a class="btn" href="#ready">${esc(t("ready"))} →</a></div>`;
   return h;
 }
@@ -367,8 +519,10 @@ function render() {
   else if (r === "ready") { app.innerHTML = backBtn() + viewReady(); title += " · " + t("ready"); wireReady(); }
   else if (r === "card") { app.innerHTML = backBtn() + viewCard(); title += " · " + t("card"); wireCard(); }
   else if (r === "all") { app.innerHTML = backBtn() + viewAll(); title += " · " + t("all"); }
+  else if (r.startsWith("room/") && ROOM[r.slice(5)]) { const id = r.slice(5); app.innerHTML = backBtn() + viewRoom(id) + backBtn(); title += " · " + L(ROOM[id].t); wireRoom(id); }
+  else if (r === "crew") { app.innerHTML = backBtn() + viewCrew() + backBtn(); title += " · " + t("crew"); }
   else if (SEC[r]) { app.innerHTML = backBtn() + sectionHTML(SEC[r]) + backBtn(); title += " · " + L(SEC[r].t); }
-  else { app.innerHTML = viewHome(); title += (lang === "de" ? " – 4 Wochen ohne Strom" : " – 4 weeks without power"); }
+  else { app.innerHTML = viewHome(); title += " – " + t("hero"); document.getElementById("knockBtn").onclick = knock; }
   document.title = title;
 }
 function wireCheck() {
@@ -378,6 +532,16 @@ function wireCheck() {
   f.addEventListener("submit", e => { e.preventDefault(); res.dataset.shown = "1"; res.innerHTML = resultHTML(); res.scrollIntoView({ block: "start" }); res.querySelector("h2").setAttribute("tabindex", "-1"); res.querySelector("h2").focus({ preventScroll: true }); });
   if (store.shown) { res.dataset.shown = "1"; res.innerHTML = resultHTML(); }
   f.addEventListener("submit", () => { store.shown = true; save(); });
+}
+function wireRoom(id) {
+  const f = document.getElementById("qform"), r = ROOM[id];
+  const upd = e => { if (!e.target.name) return; store.ans[e.target.name] = e.target.value; save();
+    const list = gaps(store.ans), st = roomStatus(id, list);
+    document.getElementById("rstatus").innerHTML = `<span class="badge st-${st}">${esc(stLabel(st))}</span>`;
+    document.getElementById("rwho").innerHTML = whoHTML(r, st);
+    document.getElementById("rgaps").innerHTML = roomGapsHTML(id, list); };
+  f.addEventListener("change", upd); f.addEventListener("input", e => { if (e.target.type === "number") upd(e); });
+  f.addEventListener("submit", e => e.preventDefault());
 }
 function wireReady() {
   const f = document.getElementById("rform"), out = document.getElementById("rtable");

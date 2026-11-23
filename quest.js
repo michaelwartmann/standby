@@ -1,0 +1,147 @@
+"use strict";
+// Standby – the castle quest layer: rooms, night visitors, crew. EN + DE.
+// Rooms are listed from the cellar up: the walk through the castle climbs the tower.
+// box = hotspot on art/castle-map.webp in percent: [left, top, width, height].
+
+const ROOMS = [
+  { id: "well", icon: "💧", sec: ["water", "toilet"], who: "toad", box: [26, 83.2, 57.3, 13.4],
+    t: { en: "The Well", de: "Der Brunnen" },
+    lead: { en: "Drinking water, and the toilet when the water stops.", de: "Trinkwasser, und die Toilette, wenn das Wasser ausfällt." } },
+  { id: "kitchen", icon: "🥫", sec: ["food"], who: "rats", box: [26.7, 71.2, 54, 11.6],
+    t: { en: "Granary & Kitchen", de: "Vorratskammer & Küche" },
+    lead: { en: "Food that keeps, and a way to cook without power.", de: "Essen, das hält, und Kochen ohne Strom." } },
+  { id: "hearth", icon: "🔥", sec: ["warmth"], who: "fox", box: [50.8, 61.4, 29.9, 9.8],
+    t: { en: "The Hearth", de: "Die Feuerstelle" },
+    lead: { en: "One warm room, warm people.", de: "Ein warmer Raum, warme Menschen." } },
+  { id: "workshop", icon: "🔧", sec: ["tech"], who: null, helper: "ylva", box: [26.7, 60.5, 24.1, 10.7],
+    t: { en: "The Workshop", de: "Die Werkstatt" },
+    lead: { en: "Tools, valves, fuses: fix it yourself.", de: "Werkzeug, Ventile, Sicherungen: selbst reparieren." } },
+  { id: "herbs", icon: "🩹", sec: ["health"], who: null, helper: "oma", box: [28, 51.2, 22.8, 9.3],
+    t: { en: "The Herb Room", de: "Die Kräuterkammer" },
+    lead: { en: "First aid when 112 is slow.", de: "Erste Hilfe, wenn 112 nicht schnell kommt." } },
+  { id: "hall", icon: "🤝", sec: ["comms"], who: null, helper: "folk", box: [28, 41.8, 37.1, 9.4],
+    t: { en: "The Great Hall", de: "Der Rittersaal" },
+    lead: { en: "Neighbours, a meeting place, simple rules.", de: "Nachbarn, ein Treffpunkt, einfache Regeln." } },
+  { id: "bard", icon: "🎻", sec: ["mind"], who: "troll", box: [28, 32.7, 37.1, 9.1],
+    t: { en: "The Bard's Corner", de: "Die Spielmannsecke" },
+    lead: { en: "Routine, games, stories: keeping spirits up.", de: "Tagesablauf, Spiele, Geschichten: gute Laune halten." } },
+  { id: "gate", icon: "🚪", sec: ["tech", "warmth"], who: "gang", box: [40.4, 24, 26.7, 9.1],
+    t: { en: "The Gatehouse", de: "Das Torhaus" },
+    lead: { en: "Safe from fire and smoke, some cash behind the door.", de: "Sicher vor Feuer und Rauch, etwas Bargeld hinter der Tür." } },
+  { id: "signal", icon: "📯", sec: ["comms", "light"], who: "crows", box: [39.1, 15.6, 29.9, 8.4],
+    t: { en: "The Signal Tower", de: "Der Signalturm" },
+    lead: { en: "News you can trust when the phone network is down.", de: "Verlässliche Nachrichten, wenn das Handynetz weg ist." } },
+  { id: "lantern", icon: "🏮", sec: ["light"], who: "magpie", box: [41.7, 2.2, 20.2, 9.4],
+    t: { en: "The Lantern Tower", de: "Der Laternenturm" },
+    lead: { en: "Light, and power for the phone.", de: "Licht, und Strom fürs Handy." } }
+];
+
+// Which questions belong to which room (ids from Q in index.html).
+const ROOM_Q = {
+  well: ["water_l", "treat", "floor", "toilet"], kitchen: ["food", "cook"], hearth: ["heat", "sleep"],
+  workshop: ["tools"], herbs: ["aid"], hall: ["neigh"], bard: ["mind"], gate: ["safety", "cash"],
+  signal: ["radio", "meet"], lantern: ["light", "power"]
+};
+
+const VISITORS = {
+  fox: { n: { en: "Frost the fox", de: "Frost, der Fuchs" }, risk: { en: "the cold", de: "die Kälte" },
+    inn: { en: "Frost slips in through the cold walls and curls up on your bed. Without warm sleeping bags, the nights get very long.",
+           de: "Frost schlüpft durch die kalten Wände und rollt sich auf deinem Bett ein. Ohne warme Schlafsäcke werden die Nächte sehr lang." },
+    out: { en: "Frost sniffs at your warm room, sneezes, and trots back into the snow.",
+           de: "Frost schnuppert an deinem warmen Raum, niest und trabt zurück in den Schnee." } },
+  rats: { n: { en: "the pantry rats", de: "die Vorratsratten" }, risk: { en: "running out of food", de: "leere Vorräte" },
+    inn: { en: "The pantry rats are counting your tins. It doesn't take them long.",
+           de: "Die Vorratsratten zählen deine Dosen. Das geht schnell." },
+    out: { en: "The rats find only sealed tins and a very full shelf. They leave, offended.",
+           de: "Die Ratten finden nur verschlossene Dosen und ein volles Regal. Beleidigt ziehen sie ab." } },
+  toad: { n: { en: "the Murk toad", de: "die Schlammkröte" }, risk: { en: "unsafe water", de: "unsicheres Wasser" },
+    inn: { en: "The Murk toad has moved into your water barrel and is very comfortable there.",
+           de: "Die Schlammkröte ist in dein Wasserfass gezogen und fühlt sich dort sehr wohl." },
+    out: { en: "The barrel is full, the filter is ready. The toad hops back to its pond.",
+           de: "Das Fass ist voll, der Filter bereit. Die Kröte hüpft zurück in ihren Teich." } },
+  magpie: { n: { en: "the magpie", de: "die Elster" }, risk: { en: "no light, no phone power", de: "kein Licht, kein Handy-Strom" },
+    inn: { en: "The magpie has stolen your last candle. Your phone is at 3 %.",
+           de: "Die Elster hat deine letzte Kerze gestohlen. Dein Handy hat noch 3 %." },
+    out: { en: "The magpie circles the lantern tower, but the headlamps are on and the solar panel is charging. Nothing to steal.",
+           de: "Die Elster kreist um den Laternenturm, aber die Stirnlampen leuchten und das Solarpanel lädt. Nichts zu holen." } },
+  crows: { n: { en: "the rumour crows", de: "die Gerüchtekrähen" }, risk: { en: "false news", de: "falsche Nachrichten" },
+    inn: { en: "The rumour crows shout from the roof: “The water is poisoned! The power is back tomorrow!” Who can you ask?",
+           de: "Die Gerüchtekrähen krächzen vom Dach: „Das Wasser ist vergiftet! Morgen ist der Strom zurück!“ Wen kannst du fragen?" },
+    out: { en: "The crows shout, but the radio says otherwise, and you know where the emergency point is.",
+           de: "Die Krähen krächzen, aber das Radio sagt etwas anderes, und du weißt, wo der Notfall-Treffpunkt ist." } },
+  troll: { n: { en: "the Grumble troll", de: "der Grummeltroll" }, risk: { en: "low spirits", de: "schlechte Stimmung" },
+    inn: { en: "Night 10. The Grumble troll sits down by the fire, and everyone gets snappy.",
+           de: "Nacht 10. Der Grummeltroll setzt sich ans Feuer, und alle werden gereizt." },
+    out: { en: "Cards on the table, a story, a song. The troll sulks, then laughs despite himself.",
+           de: "Karten auf den Tisch, eine Geschichte, ein Lied. Der Troll schmollt, dann lacht er doch." } },
+  gang: { n: { en: "the Muddy Boots gang", de: "die Matschstiefel-Bande" }, risk: { en: "fire, smoke and accidents", de: "Feuer, Rauch und Unfälle" },
+    inn: { en: "Three clumsy robbers try the door, knock over a candle and flee. Smoke in the hall, and no CO alarm, no fire blanket.",
+           de: "Drei tollpatschige Räuber rütteln am Tor, stoßen eine Kerze um und fliehen. Rauch im Flur, und kein CO-Melder, keine Löschdecke." },
+    out: { en: "The gang finds the door shut, the CO alarm blinking, the fire blanket on its hook. They tiptoe away.",
+           de: "Die Bande findet das Tor zu, den CO-Melder blinkend, die Löschdecke am Haken. Auf Zehenspitzen ziehen sie ab." } }
+};
+
+const HELPERS = {
+  ylva: { img: "c-ylva", n: "Ylva",
+    weak: { en: "“Where's the main water valve? If the pipes freeze, we need it in two minutes, not two hours.”",
+            de: "„Wo ist der Hauptwasserhahn? Wenn die Rohre einfrieren, brauchen wir ihn in zwei Minuten, nicht in zwei Stunden.“" },
+    ok: { en: "“String, knife, toolbox. We can fix that.”", de: "„Schnur, Messer, Werkzeugkasten. Das kriegen wir hin.“" } },
+  oma: { img: "c-oma-ilse", n: "Oma Ilse",
+    weak: { en: "“When nobody comes, you are the help. Learn it now, while it's easy.”",
+            de: "„Wenn keiner kommt, bist du die Hilfe. Lern es jetzt, solange es leicht ist.“" },
+    ok: { en: "“Kit packed, course done. Good. Now put the kettle on.”", de: "„Kasten gepackt, Kurs gemacht. Gut. Jetzt setz den Kessel auf.“" } },
+  folk: { img: "hillfolk", n: { en: "The hill folk", de: "Die Leute vom Hügel" },
+    weak: { en: "The village doesn't know you yet. Knock on three doors: names, flats, what each of you can do.",
+            de: "Das Dorf kennt dich noch nicht. Klopf an drei Türen: Namen, Wohnungen, wer was kann." },
+    ok: { en: "The hill folk know your name, and you know theirs. Bread for firewood, a song for a blanket.",
+          de: "Die Leute vom Hügel kennen deinen Namen, und du ihre. Brot gegen Feuerholz, ein Lied gegen eine Decke." } }
+};
+
+const QUEST = {
+  en: {
+    hero: "Hold the Castle", heroSub: "28 nights without power",
+    intro: "The lights go out. Ylva, ten years old and fearless, holds her crooked tower on the hill, with her big dog Brumm, Oma Ilse and the village below. Every night a cheeky visitor tries its trick. Walk through your own castle, room by room, and close the gaps before they find them.",
+    holds: "Your castle holds", nights: "nights", of: "of 28", unknown: "Walk through your castle to find out how many nights it holds.",
+    weakest: "Weakest point:", walk: "Walk the castle", walkSub: "About 20 questions, room by room, from the cellar up",
+    fixNext: "Go to the weakest room", allReady: "Every room is ready. Ylva salutes you. Check again in a few months.",
+    estimate: "A rough estimate from your answers: water, food, warmth and the toilet set the limit.",
+    mapH: "Your castle", mapHint: "Tap a room.", roomsH: "The rooms",
+    st_r: "Missing", st_a: "Weak", st_g: "Ready", st_u: "Not checked",
+    tonight: "Who knocks tonight?", tonightBtn: "Open the door", another: "Another night",
+    nightN: "Night", chased: "Ylva chases them off.", inside: "They got in.", fixIt: "Fix this room",
+    checkRoom: "Check this room", roomGaps: "What to do here", knowH: "What to know", nextRoom: "Climb up:", prevRoom: "Down:",
+    noGaps: "Nothing missing here.", unanswered: "Answer the questions above, then this room gets its banner.",
+    crew: "Meet the crew", crewSub: "Ylva, Brumm, Oma Ilse, and who comes knocking",
+    householdH: "Who lives in your castle?", householdSay: "Ylva: “Before we start: how many of us are there, and for how long?”",
+    visitorsH: "The night visitors", visitorsLead: "Each one stands for a real risk in a long outage.", standsFor: "stands for",
+    ylvaTxt: "About ten, loud, practical and kind. Fixes most things with string and a pocketknife and never leaves a friend out in the cold. Motto: strong is good, clever is better, together is best.",
+    brummTxt: "Huge, slow and shaggy. Warms the beds, guards the gate, sleeps through most of the excitement.",
+    omaTxt: "The neighbour who remembers how people managed before electricity. Runs the herb room, knows every bandage and every soup.",
+    folkTxt: "The village below the tower: the baker, the grandfather, a mother with her toddler, two kids. Nobody gets through four weeks alone.",
+    resultNights: "Your castle holds about", roomsReady: "rooms ready",
+    more: "More", now: "Hour by hour", nowSub: "The power is out: what to do first"
+  },
+  de: {
+    hero: "Halte die Burg", heroSub: "28 Nächte ohne Strom",
+    intro: "Das Licht geht aus. Ylva, zehn Jahre alt und furchtlos, hält ihren schiefen Turm auf dem Hügel, mit ihrem großen Hund Brumm, Oma Ilse und dem Dorf darunter. Jede Nacht versucht ein frecher Besucher seinen Trick. Geh durch deine eigene Burg, Raum für Raum, und schließ die Lücken, bevor sie jemand findet.",
+    holds: "Deine Burg hält", nights: "Nächte", of: "von 28", unknown: "Geh durch deine Burg und finde heraus, wie viele Nächte sie hält.",
+    weakest: "Schwächste Stelle:", walk: "Durch die Burg gehen", walkSub: "Etwa 20 Fragen, Raum für Raum, vom Keller nach oben",
+    fixNext: "Zum schwächsten Raum", allReady: "Jeder Raum ist bereit. Ylva salutiert. In ein paar Monaten wieder prüfen.",
+    estimate: "Grobe Schätzung aus deinen Antworten: Wasser, Essen, Wärme und Toilette setzen die Grenze.",
+    mapH: "Deine Burg", mapHint: "Tipp auf einen Raum.", roomsH: "Die Räume",
+    st_r: "Fehlt", st_a: "Schwach", st_g: "Bereit", st_u: "Nicht geprüft",
+    tonight: "Wer klopft heute Nacht?", tonightBtn: "Tür aufmachen", another: "Noch eine Nacht",
+    nightN: "Nacht", chased: "Ylva jagt sie davon.", inside: "Sie sind drin.", fixIt: "Diesen Raum sichern",
+    checkRoom: "Diesen Raum prüfen", roomGaps: "Was hier zu tun ist", knowH: "Was man wissen muss", nextRoom: "Nach oben:", prevRoom: "Nach unten:",
+    noGaps: "Hier fehlt nichts.", unanswered: "Beantworte die Fragen oben, dann bekommt dieser Raum sein Banner.",
+    crew: "Die Mannschaft", crewSub: "Ylva, Brumm, Oma Ilse, und wer nachts anklopft",
+    householdH: "Wer wohnt in deiner Burg?", householdSay: "Ylva: „Bevor wir losgehen: Wie viele sind wir, und für wie lange?“",
+    visitorsH: "Die nächtlichen Besucher", visitorsLead: "Jeder steht für ein echtes Risiko bei einem langen Stromausfall.", standsFor: "steht für",
+    ylvaTxt: "Etwa zehn, laut, praktisch und herzlich. Repariert fast alles mit Schnur und Taschenmesser und lässt keinen Freund in der Kälte stehen. Motto: Stark ist gut, klug ist besser, zusammen ist am besten.",
+    brummTxt: "Riesig, langsam und zottelig. Wärmt die Betten, bewacht das Tor, verschläft die meiste Aufregung.",
+    omaTxt: "Die Nachbarin, die noch weiß, wie man ohne Strom zurechtkam. Führt die Kräuterkammer, kennt jeden Verband und jede Suppe.",
+    folkTxt: "Das Dorf unter dem Turm: der Bäcker, der Großvater, eine Mutter mit Kleinkind, zwei Kinder. Vier Wochen schafft niemand allein.",
+    resultNights: "Deine Burg hält etwa", roomsReady: "Räume bereit",
+    more: "Mehr", now: "Stunde für Stunde", nowSub: "Der Strom ist weg: was zuerst tun"
+  }
+};

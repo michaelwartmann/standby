@@ -1,8 +1,9 @@
-# Standby – 4 weeks without power
+# Standby – Hold the Castle (28 nights without power)
 
 A small, free app that helps a healthy household get through three to four weeks without electricity, and through what follows from it: no heating, no tap water, no mobile network, no shops. Spartan, not prepper.
 
-- **My check:** 20 questions → a gap list (red / amber / green), sorted water → warmth → fire safety → toilet → food → light → health → people, each with the cheapest fix.
+- **The castle quest:** Ylva, a fierce ten-year-old, holds her crooked tower for 28 nights, with her dog Brumm, Oma Ilse and the village. Your home is the castle: ten rooms from the cellar up (Well, Granary & Kitchen, Hearth, Workshop, Herb Room, Great Hall, Bard's Corner, Gatehouse, Signal Tower, Lantern Tower), each with its own questions, gaps and guidance. A rough "nights your castle holds" score (water, food, warmth, toilet) and a weakest room. Each night visitor stands for a real risk: Frost the fox (cold), the pantry rats (food), the Murk toad (water), the magpie (light and phone power), the rumour crows (false news), the Grumble troll (low spirits), the Muddy Boots gang (fire and smoke).
+- **Walk the castle (the check):** 20 questions → a gap list (red / amber / green), sorted water → warmth → fire safety → toilet → food → light → health → people, each with the cheapest fix.
 - **Stock calculator:** the BBK 10-day checklist scaled to your household and number of days, plus non-food items.
 - **Guidance:** what to do hour by hour, water, warmth, food, toilet and hygiene, light and phone power, health and first aid, tech and repair, mind and community, communication without the mobile network.
 - **Communication card:** meeting point, times, radio channel, emergency point, who to check on. Saved on the phone, printable.
@@ -12,6 +13,6 @@ English and German. Works offline after the first visit, installable on the home
 
 Not medical advice. Do a first-aid course. Sources are listed on every page (BBK, TAB report to the Bundestag, WHO, ERC, USDA, Berlin 2026 commission); the first-aid page is waiting for a review by DRK trainers.
 
-Files: `index.html` (shell, check, calculator, card), `content.js` (all guidance, EN/DE), `sw.js` (offline), `manifest.webmanifest`, `icons/` (`python3 icons/make-icons.py` makes the PNGs from `icon.svg`).
+Files: `index.html` (shell, castle, check, calculator, card), `content.js` (all guidance, EN/DE), `quest.js` (rooms, visitors, crew, EN/DE), `art/` (pictures made with Google Gemini, original characters), `sw.js` (offline), `manifest.webmanifest`, `icons/` (from the Gemini app icon).
 
 MIT licence (see the repository's LICENSE).

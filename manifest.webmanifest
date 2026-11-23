@@ -1,12 +1,12 @@
 {
-  "name": "Standby – 4 weeks without power",
+  "name": "Standby – Hold the Castle",
   "short_name": "Standby",
-  "description": "Get your household through weeks without power: gap check, stock calculator, plain guidance. Works offline.",
+  "description": "Hold your castle for 28 nights without power: walk through your home room by room with Ylva and close the gaps. Plain guidance, works offline.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#15181d",
-  "theme_color": "#15181d",
+  "background_color": "#111a2c",
+  "theme_color": "#111a2c",
   "icons": [
     {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
     {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
