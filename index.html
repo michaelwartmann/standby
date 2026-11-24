@@ -500,7 +500,11 @@ function viewAll() {
 }
 
 function render() {
-  const r = (location.hash || "#").slice(1);
+  let r = (location.hash || "#").slice(1);
+  if (r.startsWith("load=")) { try { const v = decodeURIComponent(r.slice(5)); if (!v.startsWith("standby1:")) throw 0;
+      const d = JSON.parse(decodeURIComponent(escape(atob(v.slice(9))))); if (!d.ans) throw 0;
+      store.ans = d.ans; store.card = d.card || {}; store.done = d.done || {}; save(); } catch (e) {}
+    history.replaceState(null, "", location.pathname + location.search + "#errands"); r = "errands"; }
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
   document.getElementById("f1").textContent = t("f1"); document.getElementById("f2").textContent = t("f2"); document.getElementById("f3").textContent = t("f3");
