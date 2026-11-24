@@ -417,11 +417,13 @@ const SECTIONS = [
     { h: { en: "Who keeps talking when phones are dead", de: "Wer weiter funkt, wenn die Handys tot sind" }, li: {
       en: ["Police, fire brigades, the Red Cross and THW have their own radio network (Digitalfunk BOS). Its switching centres have backup power for at least 72 hours, and thousands of its masts are being upgraded to the same.",
            "Volunteers are called out by pagers on separate networks, which also kept working in past radio outages.",
-           "So help reaches you through people, not apps: the town's emergency point, the fire station, or the neighbour who is in the volunteer fire brigade or the Red Cross. Know who they are in your street.",
+           "So help reaches you through people, not apps. The fire brigade and the Red Cross are in touch with the mayor, and the village gathers at its emergency point, usually the town hall or the fire station.",
+           "On the first day, go there: that is where news arrives, emergency calls go out by radio, and the village agrees how to go on. No need to chase anyone.",
            "In a long outage, life becomes very local. That's normal: the village, the street and those links to the emergency services are what carries."],
       de: ["Polizei, Feuerwehr, Rotes Kreuz und THW haben ein eigenes Funknetz (Digitalfunk BOS). Seine Vermittlungsstellen haben Notstrom für mindestens 72 Stunden, und Tausende seiner Masten werden ebenso ausgebaut.",
            "Ehrenamtliche werden über Funkmeldeempfänger (Pager) auf eigenen Netzen alarmiert, die auch bei früheren Funkausfällen weiterliefen.",
-           "Hilfe kommt also über Menschen, nicht über Apps: den Notfall-Treffpunkt der Gemeinde, die Feuerwache oder den Nachbarn, der bei der Freiwilligen Feuerwehr oder dem Roten Kreuz ist. Wisse, wer das in deiner Straße ist.",
+           "Hilfe kommt also über Menschen, nicht über Apps. Feuerwehr und Rotes Kreuz stehen mit dem Bürgermeister in Kontakt, und das Dorf trifft sich am Notfalltreffpunkt, meist Rathaus oder Feuerwehrhaus.",
+           "Am ersten Tag dorthin gehen: Dort kommen Nachrichten an, Notrufe gehen per Funk raus, und das Dorf spricht ab, wie es weitergeht. Niemandem hinterherlaufen.",
            "Bei einem langen Ausfall wird das Leben sehr lokal. Das ist normal: das Dorf, die Straße und diese Verbindungen zu den Einsatzkräften tragen."] } },
     { h: { en: "Do you need more than your feet?", de: "Brauchst du mehr als deine Füße?" }, li: {
       en: ["If your family and friends are within walking or cycling distance, no: you go to their house. Fixed meeting places and times only matter when you want to gather a group.",
