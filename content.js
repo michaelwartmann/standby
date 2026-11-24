@@ -414,10 +414,19 @@ const SECTIONS = [
       de: ["Dein Handy läuft weiter, das Netz nicht. Beim Berliner Stromausfall im Januar 2026 hielten viele Mobilfunkmasten nur etwa 30 Minuten mit Akku durch.",
            "In Deutschland gibt es keine gesetzliche Pflicht, Masten für eine feste Zeit mit Notstrom abzusichern. Fachleute fordern 72 Stunden; Gesetz ist das noch nicht.",
            "Also: Radio für Nachrichten, ein Plan, wie ihr euch findet, und erst dann zusätzliche Technik."] } },
+    { h: { en: "Who keeps talking when phones are dead", de: "Wer weiter funkt, wenn die Handys tot sind" }, li: {
+      en: ["Police, fire brigades, the Red Cross and THW have their own radio network (Digitalfunk BOS). Its switching centres have backup power for at least 72 hours, and thousands of its masts are being upgraded to the same.",
+           "Volunteers are called out by pagers on separate networks, which also kept working in past radio outages.",
+           "So help reaches you through people, not apps: the town's emergency point, the fire station, or the neighbour who is in the volunteer fire brigade or the Red Cross. Know who they are in your street.",
+           "In a long outage, life becomes very local. That's normal: the village, the street and those links to the emergency services are what carries."],
+      de: ["Polizei, Feuerwehr, Rotes Kreuz und THW haben ein eigenes Funknetz (Digitalfunk BOS). Seine Vermittlungsstellen haben Notstrom für mindestens 72 Stunden, und Tausende seiner Masten werden ebenso ausgebaut.",
+           "Ehrenamtliche werden über Funkmeldeempfänger (Pager) auf eigenen Netzen alarmiert, die auch bei früheren Funkausfällen weiterliefen.",
+           "Hilfe kommt also über Menschen, nicht über Apps: den Notfall-Treffpunkt der Gemeinde, die Feuerwache oder den Nachbarn, der bei der Freiwilligen Feuerwehr oder dem Roten Kreuz ist. Wisse, wer das in deiner Straße ist.",
+           "Bei einem langen Ausfall wird das Leben sehr lokal. Das ist normal: das Dorf, die Straße und diese Verbindungen zu den Einsatzkräften tragen."] } },
     { h: { en: "Do you need more than your feet?", de: "Brauchst du mehr als deine Füße?" }, li: {
-      en: ["If your family and friends are within walking or cycling distance, no: agreed meeting places and times do the job, for free.",
+      en: ["If your family and friends are within walking or cycling distance, no: you go to their house. Fixed meeting places and times only matter when you want to gather a group.",
            "Extra tech is worth it when people are farther apart, someone can't walk, or you want to help organise the village."],
-      de: ["Wenn Familie und Freunde zu Fuß oder mit dem Rad erreichbar sind: nein. Feste Treffpunkte und Uhrzeiten reichen, und kosten nichts.",
+      de: ["Wenn Familie und Freunde zu Fuß oder mit dem Rad erreichbar sind: nein. Ihr geht zu ihnen nach Hause. Feste Treffpunkte und Uhrzeiten braucht es nur, wenn ihr eine Gruppe zusammenholen wollt.",
            "Zusätzliche Technik lohnt sich, wenn Menschen weiter weg wohnen, jemand nicht gehen kann oder du im Dorf mit organisieren willst."] } },
     { h: { en: "Layer 0: no tech", de: "Stufe 0: ohne Technik" }, li: {
       en: ["A fixed meeting place and two fixed times a day, e.g. 10:00 and 18:00.",
