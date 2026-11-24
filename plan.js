@@ -225,3 +225,121 @@ function assess(a) {
   links.sort((x, y) => rank[x.s] - rank[y.s] || needRank.indexOf(x.need) - needRank.indexOf(y.need));
   return { lv, why, links, verdict, nights: { n: Math.max(0, Math.min(GOAL, parts[0][1])), weak: parts[0][1] < GOAL ? parts[0][0] : null } };
 }
+
+/* ---------- exact numbers for the equipment (optional) ---------- */
+Q.push(
+  { id: "station_wh", type: "num", min: 0, only: a => a.power && a.power !== "none", en: "Power station capacity in Wh (on the label)", de: "Kapazität der Powerstation in Wh (steht auf dem Gerät)" },
+  { id: "solar_w", type: "num", min: 0, only: a => a.solar === "yes", en: "Solar panel power in watts", de: "Leistung des Solarpanels in Watt" },
+  { id: "ev_kwh", type: "num", min: 0, only: a => a.car === "ev" || a.car === "v2l", en: "Car battery in kWh", de: "Autobatterie in kWh" }
+);
+
+/* ---------- what the system can and can't do ---------- */
+const fmtN = v => Math.round(v).toLocaleString(typeof lang === "string" ? lang : "en");
+function caps(a) {
+  const out = [], ok = (y, en, de) => out.push({ y, en, de });
+  const n = k => +a[k] || 0, P = Math.max(1, n("adults")) + n("kids");
+  const sizeWh = { small: 300, mid: 1000, big: 2000 }[a.power] || 0, wh = n("station_wh") || sizeWh;
+  const sine = a.sine === "yes", ev = a.car === "ev" || a.car === "v2l", evk = n("ev_kwh");
+  const solarDay = a.solar === "yes" ? (n("solar_w") || 100) * 0.8 : 0; // winter in Central Europe: roughly 0.5–1 kWh per kWp a day
+  const carDay = ev ? 1500 : a.car === "ice" ? 1000 : 0;               // 12 V socket, about 100 W for many hours
+  const boilW = a.heating === "oil" ? 175 : a.heating === "gas_own" ? 75 : 0;
+  // heating
+  if (a.heating === "wood") ok(a.wood === "yes", "Heating: the wood stove heats without power" + (a.wood === "yes" ? "." : ", but the wood for 4 weeks is missing."), "Heizen: der Holzofen heizt ohne Strom" + (a.wood === "yes" ? "." : ", aber das Holz für 4 Wochen fehlt."));
+  else if (boilW) {
+    const missing = [];
+    if (a.plug !== "yes") missing.push({ en: "a plug on the boiler", de: "ein Stecker an der Heizung" });
+    if (!((wh && sine) || a.car === "v2l" || a.generator === "yes")) missing.push({ en: "a power source with pure-sine 230 V", de: "eine Stromquelle mit reinem Sinus 230 V" });
+    if (missing.length) ok(false, `Heating: the boiler can't run. Missing: ${missing.map(m => m.en).join(" and ")}.`, `Heizen: die Heizung kann nicht laufen. Es fehlt: ${missing.map(m => m.de).join(" und ")}.`);
+    else {
+      const per = wh ? Math.round(wh * 0.85 / boilW) : 0, daily = solarDay + carDay, dh = Math.round(daily * 0.85 / boilW);
+      ok(true, `Heating: the boiler runs about ${per} h per charge of the power station` + (daily ? `, and recharging (${[solarDay ? "solar" : "", carDay ? "car" : ""].filter(Boolean).join(" + ")}) adds about ${dh} h a day.` : ".") + (a.car === "v2l" ? " The car's 230 V socket can also run it directly." : ""),
+             `Heizen: die Heizung läuft etwa ${per} h pro Akkuladung` + (daily ? `, und Nachladen (${[solarDay ? "Solar" : "", carDay ? "Auto" : ""].filter(Boolean).join(" + ")}) bringt etwa ${dh} h pro Tag.` : ".") + (a.car === "v2l" ? " Die 230-V-Steckdose des Autos kann sie auch direkt betreiben." : ""));
+    }
+  } else ok(false, "Heating: it can't run without grid power. Warmth comes from the warm room, layers and the tent.", "Heizen: ohne Netzstrom läuft sie nicht. Wärme kommt vom warmen Raum, Schichten und dem Zelt.");
+  ok(a.sleep === "all" && (a.tent === "yes" || a.blankets === "yes"), a.sleep === "all" ? `Sleeping warm: sleeping bags for all ${P}` + (a.tent === "yes" ? ", and a tent for the warm room." : ".") : "Sleeping warm: not everyone has a warm sleeping bag yet.",
+     a.sleep === "all" ? `Warm schlafen: Schlafsäcke für alle ${P}` + (a.tent === "yes" ? ", und ein Zelt für den warmen Raum." : ".") : "Warm schlafen: noch nicht alle haben einen warmen Schlafsack.");
+  // power reservoir
+  if (ev && evk) ok(true, `Car battery: about ${evk} kWh. Through the 12 V socket (about 1–2 kWh a day) it can recharge the power station for the whole 28 days.`, `Autobatterie: etwa ${evk} kWh. Über die 12-V-Buchse (etwa 1–2 kWh am Tag) kann sie die Powerstation die ganzen 28 Tage nachladen.`);
+  if (wh) ok(true, `Power station: ${fmtN(wh)} Wh ≈ ${Math.round(wh * 0.85 / 15)} phone charges or about ${Math.round(wh * 0.85 / 5)} hours of LED light per charge.` + (solarDay ? ` The panel adds about ${fmtN(solarDay)} Wh on a winter day, more when sunny.` : ""),
+                `Powerstation: ${fmtN(wh)} Wh ≈ ${Math.round(wh * 0.85 / 15)} Handyladungen oder etwa ${Math.round(wh * 0.85 / 5)} Stunden LED-Licht pro Ladung.` + (solarDay ? ` Das Panel bringt an einem Wintertag etwa ${fmtN(solarDay)} Wh, bei Sonne mehr.` : ""));
+  if (wh && wh < 1500) ok(false, "Cooking on electricity: an induction plate needs about 2 kW, too much for this power station.", "Elektrisch kochen: ein Induktionsfeld braucht etwa 2 kW, zu viel für diese Powerstation.");
+  // cooking, water, food, info, cash
+  const cookTxt = { gas: ["gas hob", "Gasherd"], camping: ["camping stove", "Campingkocher"], wood: ["rocket or wood stove", "Raketen- oder Holzofen"] }[a.cook];
+  ok(!!cookTxt, cookTxt ? `Cooking without power: ${cookTxt[0]}.` : "Cooking without power: not possible yet. Oats, tins and nuts need no fire.", cookTxt ? `Kochen ohne Strom: ${cookTxt[1]}.` : "Kochen ohne Strom: noch nicht möglich. Haferflocken, Konserven und Nüsse brauchen kein Feuer.");
+  const d = Math.floor(n("water_l") / (P * 2)), tr = a.treat === "filter";
+  ok(d >= 14 || tr, `Water: ${n("water_l")} L stored ≈ ${d} days for ${P}.` + (tr ? " The filter makes rain or well water drinkable after that." : " Nothing to make other water safe."), `Wasser: ${n("water_l")} L Vorrat ≈ ${d} Tage für ${P}.` + (tr ? " Danach macht der Filter Regen- oder Brunnenwasser trinkbar." : " Nichts, um anderes Wasser trinkbar zu machen."));
+  const f = +a.food || 0;
+  ok(f >= GOAL, `Food: about ${f} days at normal eating, about ${Math.round(f * 1.3)} if adults eat less.`, `Essen: etwa ${f} Tage bei normalem Essen, etwa ${Math.round(f * 1.3)}, wenn Erwachsene weniger essen.`);
+  ok(a.radio === "yes", a.radio === "yes" ? "News: radio works without the phone network." : "News: no radio, so no news once the phone network is down.", a.radio === "yes" ? "Nachrichten: das Radio geht auch ohne Handynetz." : "Nachrichten: kein Radio, also keine Nachrichten, wenn das Handynetz weg ist.");
+  ok(a.cash === "enough", a.cash === "enough" ? "Cash: enough at home." : "Cash: not enough at home; cards and ATMs stop with the power.", a.cash === "enough" ? "Bargeld: genug zu Hause." : "Bargeld: zu wenig zu Hause; Karten und Automaten fallen mit dem Strom aus.");
+  return out;
+}
+
+/* ---------- errands: what to buy or do, where ---------- */
+const STORES = {
+  bank: { icon: "🏧", en: "Bank or ATM", de: "Bank oder Geldautomat", q: { en: "ATM", de: "Geldautomat" }, h: [[0, 24], [0, 24]], hint: { en: "ATMs: day and night", de: "Automaten: Tag und Nacht" } },
+  super: { icon: "🛒", en: "Supermarket", de: "Supermarkt", q: { en: "supermarket", de: "Supermarkt" }, h: [[8, 20], null], hint: { en: "Typically Mon–Sat 8–20", de: "Meist Mo–Sa 8–20 Uhr" } },
+  drug: { icon: "🧴", en: "Drugstore", de: "Drogerie", q: { en: "drugstore", de: "Drogerie" }, h: [[8, 20], null], hint: { en: "Typically Mon–Sat 8–20", de: "Meist Mo–Sa 8–20 Uhr" } },
+  pharm: { icon: "💊", en: "Pharmacy", de: "Apotheke", q: { en: "pharmacy", de: "Apotheke" }, h: [[8, 18], null], sat: 13, hint: { en: "Typically Mon–Fri 8–18:30, Sat 8–13; emergency pharmacy at night", de: "Meist Mo–Fr 8–18:30, Sa 8–13 Uhr; nachts Notdienst" } },
+  hard: { icon: "🔨", en: "Hardware store (DIY)", de: "Baumarkt", q: { en: "hardware store", de: "Baumarkt" }, h: [[8, 20], null], hint: { en: "Typically Mon–Sat 8–20", de: "Meist Mo–Sa 8–20 Uhr" } },
+  outdoor: { icon: "⛺", en: "Outdoor or camping shop", de: "Outdoor- oder Campingladen", q: { en: "outdoor shop", de: "Outdoor Laden" }, h: [[10, 19], null], hint: { en: "Typically Mon–Sat 10–19; or order online today", de: "Meist Mo–Sa 10–19 Uhr; oder heute online bestellen" } },
+  elec: { icon: "🔌", en: "Electronics store", de: "Elektronikmarkt", q: { en: "electronics store", de: "Elektronikmarkt" }, h: [[10, 20], null], hint: { en: "Typically Mon–Sat 10–20; or order online today", de: "Meist Mo–Sa 10–20 Uhr; oder heute online bestellen" } },
+  call: { icon: "📞", en: "Phone calls", de: "Anrufe", h: [[8, 17], null], workdays: true, hint: { en: "Offices: Mon–Fri", de: "Büros: Mo–Fr" } },
+  home: { icon: "🏠", en: "At home", de: "Zu Hause" },
+  people: { icon: "🤝", en: "Neighbours and family", de: "Nachbarn und Familie" }
+};
+const STORE_ORDER = ["bank", "super", "drug", "pharm", "hard", "outdoor", "elec", "call", "home", "people"];
+function errands(a, links) {
+  const n = k => +a[k] || 0, adults = Math.max(1, n("adults")), kids = n("kids"), P = adults + kids;
+  const F = adults + kids * 0.7, f = +a.food || 0, miss = Math.max(0, GOAL - f) / GOAL;
+  const kg = per => Math.max(1, Math.ceil(per * F * miss));
+  const water = Math.max(0, Math.ceil(P * 2 * 14 - n("water_l")));
+  const M = {
+    "w-bags": [["outdoor", "Warm sleeping bags (comfort about 0 °C) for everyone without one", "Warme Schlafsäcke (Komfort etwa 0 °C) für alle ohne einen"]],
+    "w-tent": [["outdoor", "A camping tent for the warm room (2–3 people), or use blankets you have", "Ein Campingzelt für den warmen Raum (2–3 Personen), oder vorhandene Decken nehmen"]],
+    "w-room": [["home", "Choose the warm room; lay a blanket ready for its window", "Den warmen Raum festlegen; eine Decke fürs Fenster bereitlegen"]],
+    "w-wood": [["call", "Order dry firewood for 4 weeks", "Trockenes Brennholz für 4 Wochen bestellen"]],
+    "p-plug": [["call", a.tenure === "rent" ? "Landlord: ask for an electrician to fit a plug or changeover switch on the boiler" : "Electrician: appointment to fit a plug or changeover switch on the boiler", a.tenure === "rent" ? "Vermieter: Elektrofachkraft für Stecker oder Umschalter an der Heizung anfragen" : "Elektrofachkraft: Termin für Stecker oder Umschalter an der Heizung"]],
+    "p-station": [["elec", "Power station about 1 kWh, pure-sine 230 V" + (a.car === "ev" ? ", plus its 12 V car charging cable" : ""), "Powerstation etwa 1 kWh, reiner Sinus 230 V" + (a.car === "ev" ? ", dazu das 12-V-Ladekabel fürs Auto" : "")]],
+    "p-recharge": [["elec", "Foldable solar panel 100–200 W that fits the power station's input", "Faltbares Solarpanel 100–200 W, passend zum Eingang der Powerstation"]],
+    "h-filter": [["outdoor", "Water filter (hollow fibre)", "Wasserfilter (Hohlfaser)"], ["pharm", "Water disinfection tablets", "Tabletten zur Wasserentkeimung"]],
+    "h-store": [["hard", `Food-grade water canisters, 10–20 L, for ${water} L`, `Lebensmittelechte Wasserkanister, 10–20 L, für ${water} L`], ["home", `Fill the canisters with tap water (${water} L), label with the date`, `Kanister mit Leitungswasser füllen (${water} L), mit Datum beschriften`]],
+    "h-cans": [["hard", "2 empty canisters for fetching water", "2 leere Kanister zum Wasserholen"], ["call", "Find the nearest emergency well (town website or town hall)", "Den nächsten Notbrunnen herausfinden (Website oder Rathaus der Gemeinde)"]],
+    "h-floor": [["home", "Note: fill bathtub, pots and bottles at the first minute", "Merken: in der ersten Minute Badewanne, Töpfe und Flaschen füllen"]],
+    "t-kit": [["hard", "Bucket with lid", "Eimer mit Deckel"], ["super", "Strong bin bags and 10 L cat litter", "Feste Müllbeutel und 10 L Katzenstreu"]],
+    "t-hyg": [["drug", "Soap, wet wipes, hand disinfectant for 4 weeks", "Seife, Feuchttücher, Handdesinfektion für 4 Wochen"]],
+    "f-stock": [["super", `Oats ${kg(4)} kg · rice or pasta ${kg(3)} kg · lentils ${kg(2)} kg · oil ${kg(1)} L · nuts or peanut butter ${kg(1)} kg · salt, sugar or honey`, `Haferflocken ${kg(4)} kg · Reis oder Nudeln ${kg(3)} kg · Linsen ${kg(2)} kg · Öl ${kg(1)} L · Nüsse oder Erdnussbutter ${kg(1)} kg · Salz, Zucker oder Honig`]],
+    "f-stove": [["outdoor", "Camping stove and about 10 gas cartridges, or a rocket stove for outdoors", "Campingkocher und etwa 10 Gaskartuschen, oder ein Raketenofen für draußen"]],
+    "f-vit": [["super", "Tinned fruit, juice, sauerkraut", "Obstkonserven, Saft, Sauerkraut"]],
+    "l-lamp": [["hard", `Headlamps: ${P}, plus spare batteries`, `Stirnlampen: ${P}, dazu Ersatzbatterien`]],
+    "l-radio": [["elec", "Crank or battery radio", "Kurbel- oder Batterieradio"]],
+    "l-bank": [["elec", "Power bank 20,000 mAh", "Powerbank 20.000 mAh"]],
+    "l-solar": [["elec", "Small foldable solar panel for power banks", "Kleines faltbares Solarpanel für Powerbanks"]],
+    "g-co": [["hard", "Battery CO alarm (EN 50291) and a fire blanket", "CO-Melder mit Batterie (EN 50291) und eine Löschdecke"]],
+    "g-co2": [["hard", "The missing one: battery CO alarm or fire blanket / 6 L foam extinguisher", "Das Fehlende: CO-Melder mit Batterie oder Löschdecke / 6-L-Schaumlöscher"]],
+    "g-cash": [["bank", `Cash in small notes: at least €${100 * P}`, `Bargeld in kleinen Scheinen: mindestens ${100 * P} €`]],
+    "m-kit": [["pharm", "First-aid kit (a car kit is a good start)", "Verbandkasten (ein Kfz-Verbandkasten reicht für den Anfang)"], ["call", "Book a first-aid course", "Erste-Hilfe-Kurs buchen"]],
+    "m-course": [["call", "Book a first-aid course", "Erste-Hilfe-Kurs buchen"]],
+    "m-meds": [["call", "Doctor: how to keep a 4-week reserve of your medicines", "Arztpraxis: wie du eine 4-Wochen-Reserve deiner Medikamente anlegst"]],
+    "p-neigh": [["people", "Ring three neighbours' doorbells: names, what each can do", "Bei drei Nachbarn klingeln: Namen, wer was kann"]],
+    "p-neigh2": [["people", "Meet one or two more neighbours; agree a meeting place and time", "Ein, zwei Nachbarn mehr kennenlernen; Treffpunkt und Uhrzeit vereinbaren"]],
+    "p-refuge": [["people", "Agree who you would take in, or where you would go", "Absprechen, wen ihr aufnehmt oder wohin ihr geht"]],
+    "s-meet": [["home", "Look up your town's emergency point and write it on the card", "Den Notfall-Treffpunkt der Gemeinde nachschlagen und auf die Karte schreiben"]],
+    "b-mind": [["super", "Cards or a board game", "Karten oder ein Brettspiel"]],
+    "k-tools": [["hard", "Small toolbox", "Kleiner Werkzeugkasten"], ["home", "Find the main water valve, fuse box and gas valve", "Hauptwasserhahn, Sicherungskasten und Gashahn suchen"]],
+    "c-city": [["people", "Ask family or friends in the countryside: could you come, and when would you go?", "Familie oder Freunde auf dem Land fragen: könntet ihr kommen, und wann würdet ihr fahren?"]]
+  };
+  const by = {};
+  for (const l of links) for (const [st, en, de] of (M[l.id] || [])) (by[st] = by[st] || []).push({ id: l.id, s: l.s, en, de });
+  return STORE_ORDER.filter(k => by[k]).map(k => ({ id: k, store: STORES[k], items: by[k] }));
+}
+// Typical opening hours in Germany, to say "probably open now". Holidays not included.
+function openNow(st, d) {
+  if (!st.h) return null;
+  const day = d.getDay(), hr = d.getHours() + d.getMinutes() / 60;
+  if (st.h[0][0] === 0) return true;
+  if (day === 0) return false;
+  if (st.workdays && day === 6) return false;
+  const [o, c] = day === 6 && st.sat ? [st.h[0][0], st.sat] : st.h[0];
+  return hr >= o && hr < c;
+}

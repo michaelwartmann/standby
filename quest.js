@@ -40,7 +40,7 @@ const ROOMS = [
 const ROOM_Q = {
   well: ["water_l", "treat", "canisters", "toilet", "hygiene"], kitchen: ["food", "cook", "vit"],
   hearth: ["heating", "wood", "warmroom", "sleep", "tent", "blankets"],
-  workshop: ["power", "sine", "plug", "car", "solar", "generator", "tools"], herbs: ["aid", "meds"],
+  workshop: ["power", "station_wh", "sine", "plug", "car", "ev_kwh", "solar", "solar_w", "generator", "tools"], herbs: ["aid", "meds"],
   hall: ["neigh", "refuge"], bard: ["mind"], gate: ["safety", "cash"], signal: ["radio", "meet"], lantern: ["light", "banks"]
 };
 
@@ -120,6 +120,12 @@ const QUEST = {
     omaTxt: "The neighbour who remembers how people managed before electricity. Runs the herb room, knows every bandage and every soup.",
     folkTxt: "The village below the tower: the baker, the grandfather, a mother with her toddler, two kids. Nobody gets through four weeks alone.",
     resultNights: "Your castle holds about", roomsReady: "rooms ready",
+    capsH: "What your system can and can't do", errH: "Do it now", errSub: "Your shopping and errand list, by shop",
+    errLead: "Everything still missing, grouped by where you get it. Most important first; tick off as you go.",
+    nowIs: "Now:", nextH: "Your next three steps", openYes: "probably open now", openNo: "probably closed now", hoursNote: "Typical opening hours in Germany; holidays not included. Check your local shop.",
+    findNear: "Find nearby", moveH: "Move your answers to your phone", moveLead: "Copy the code, send it to yourself, and paste it into the app on your phone. Nothing goes to a server.",
+    copyCode: "Copy code", shareCode: "Share code", pasteHere: "Paste a code here", loadCode: "Load", copied: "Copied.", loaded: "Loaded. Your answers are now on this device.", badCode: "That code doesn't work.",
+    days7: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
     planH: "Your battle plan", planSub: "Your levels and the links still missing", planLead: "Planned for the worst case: the whole country without power for 28 winter days, nothing coming in. Each need is a chain; here is how far yours reach and what is missing.",
     todoH: "Links to close", todoHint: "Most important first. Tick off what you've done; then update the answer in the room so the castle counts it.",
     chainsH: "Your five chains", verdictH: "Can this home hold?",
@@ -146,6 +152,12 @@ const QUEST = {
     omaTxt: "Die Nachbarin, die noch weiß, wie man ohne Strom zurechtkam. Führt die Kräuterkammer, kennt jeden Verband und jede Suppe.",
     folkTxt: "Das Dorf unter dem Turm: der Bäcker, der Großvater, eine Mutter mit Kleinkind, zwei Kinder. Vier Wochen schafft niemand allein.",
     resultNights: "Deine Burg hält etwa", roomsReady: "Räume bereit",
+    capsH: "Was dein System kann und was nicht", errH: "Jetzt erledigen", errSub: "Deine Einkaufs- und Erledigungsliste, nach Laden",
+    errLead: "Alles, was noch fehlt, sortiert nach Ort. Das Wichtigste zuerst; unterwegs abhaken.",
+    nowIs: "Jetzt:", nextH: "Deine nächsten drei Schritte", openYes: "jetzt wahrscheinlich offen", openNo: "jetzt wahrscheinlich zu", hoursNote: "Übliche Öffnungszeiten in Deutschland; Feiertage nicht berücksichtigt. Beim Laden vor Ort prüfen.",
+    findNear: "In der Nähe finden", moveH: "Antworten aufs Handy übertragen", moveLead: "Code kopieren, an dich selbst schicken und in der App auf dem Handy einfügen. Nichts geht an einen Server.",
+    copyCode: "Code kopieren", shareCode: "Code teilen", pasteHere: "Code hier einfügen", loadCode: "Laden", copied: "Kopiert.", loaded: "Geladen. Deine Antworten sind jetzt auf diesem Gerät.", badCode: "Dieser Code funktioniert nicht.",
+    days7: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
     planH: "Dein Schlachtplan", planSub: "Deine Stufen und die fehlenden Glieder", planLead: "Geplant für den Ernstfall: das ganze Land 28 Wintertage ohne Strom, kein Nachschub. Jedes Bedürfnis ist eine Kette; hier siehst du, wie weit deine reichen und was fehlt.",
     todoH: "Fehlende Glieder", todoHint: "Das Wichtigste zuerst. Hak ab, was erledigt ist; dann die Antwort im Raum ändern, damit die Burg es zählt.",
     chainsH: "Deine fünf Ketten", verdictH: "Hält dieses Zuhause?",
