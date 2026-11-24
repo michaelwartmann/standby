@@ -73,6 +73,7 @@ const Q = [
   { id: "banks", type: "choice", en: "Charged power banks for the phones?", de: "Geladene Powerbanks für die Handys?", opts: yn },
   // signal tower: information
   { id: "radio", type: "choice", en: "A crank, battery or solar radio?", de: "Ein Kurbel-, Batterie- oder Solarradio?", opts: yn },
+  { id: "famplan", type: "choice", en: "Have you agreed with family and friends how to find each other without phones (where, at what times)?", de: "Habt ihr mit Familie und Freunden abgesprochen, wie ihr euch ohne Handy findet (wo, zu welchen Uhrzeiten)?", opts: yn },
   { id: "meet", type: "choice", en: "Do you know your town's emergency point (Kat-Leuchtturm)?", de: "Kennst du den Notfall-Treffpunkt (Kat-Leuchtturm) deiner Gemeinde?", opts: yn },
   // well: water and toilet
   { id: "water_l", type: "num", def: 0, min: 0, en: "Drinking water stored at home (litres, all together)", de: "Trinkwasser zu Hause (Liter, alles zusammen)",
@@ -226,6 +227,7 @@ function assess(a) {
   if (a.neigh === "0") add("p-neigh", "hall", "people", "r", "Introduce yourself to three neighbours: names, flats, what each of you can do.", "Stell dich drei Nachbarn vor: Namen, Wohnungen, wer was kann.");
   else if (a.neigh === "1") add("p-neigh2", "hall", "people", "a", "Get to know one or two more neighbours and agree on a meeting place and time.", "Ein, zwei Nachbarn mehr kennenlernen und Treffpunkt und Uhrzeit vereinbaren.");
   if (a.refuge !== "yes") add("p-refuge", "hall", "people", n("frail") ? "r" : "a", "Agree with someone now: who you would take into your warm room, or where you would go if your home can't hold.", "Jetzt mit jemandem absprechen: wen ihr in euren warmen Raum aufnehmt, oder wohin ihr geht, wenn euer Zuhause nicht hält.");
+  if (a.famplan !== "yes") add("s-fam", "signal", "people", "a", "Agree with family and friends: if phones are down, where you meet and at what times (e.g. 10:00 and 18:00). Write it on the communication card.", "Mit Familie und Freunden absprechen: Wenn die Handys aus sind, wo ihr euch trefft und zu welchen Uhrzeiten (z. B. 10:00 und 18:00). Auf die Kommunikationskarte schreiben.");
   if (a.meet !== "yes") add("s-meet", "signal", "people", "a", "Find your town's emergency point (Notfall-Treffpunkt / Kat-Leuchtturm) and write it on the communication card.", "Den Notfall-Treffpunkt / Kat-Leuchtturm deiner Gemeinde herausfinden und auf die Kommunikationskarte schreiben.");
   if (a.mind !== "yes") add("b-mind", "bard", "mind", "a", "Books, cards, board games and a daily routine. Week two is when spirits drop.", "Bücher, Karten, Brettspiele und ein fester Tagesablauf. In Woche zwei sinkt die Stimmung.");
   if (a.tools !== "yes") add("k-tools", "workshop", "safety", "a", "A small toolbox, and find the main water valve, fuse box and gas valve today. In frost without heating, drain the pipes before they burst.", "Ein kleiner Werkzeugkasten, und heute Hauptwasserhahn, Sicherungskasten und Gashahn suchen. Bei Frost ohne Heizung die Leitungen leeren, bevor sie platzen.");
@@ -356,6 +358,7 @@ function errands(a, links) {
     "p-neigh": [["people", "Ring three neighbours' doorbells: names, what each can do", "Bei drei Nachbarn klingeln: Namen, wer was kann"]],
     "p-neigh2": [["people", "Meet one or two more neighbours; agree a meeting place and time", "Ein, zwei Nachbarn mehr kennenlernen; Treffpunkt und Uhrzeit vereinbaren"]],
     "p-refuge": [["people", "Agree who you would take in, or where you would go", "Absprechen, wen ihr aufnehmt oder wohin ihr geht"]],
+    "s-fam": [["people", "Agree meeting places and times with family and friends for when phones are down", "Mit Familie und Freunden Treffpunkt und Uhrzeiten für den Fall ohne Handy absprechen"]],
     "s-meet": [["home", "Look up your town's emergency point and write it on the card", "Den Notfall-Treffpunkt der Gemeinde nachschlagen und auf die Karte schreiben"]],
     "b-mind": [["super", "Cards or a board game", "Karten oder ein Brettspiel"]],
     "k-tools": [["hard", "Small toolbox", "Kleiner Werkzeugkasten"], ["home", "Find the main water valve, fuse box and gas valve", "Hauptwasserhahn, Sicherungskasten und Gashahn suchen"]],

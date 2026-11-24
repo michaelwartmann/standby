@@ -407,6 +407,18 @@ const SECTIONS = [
   t: { en: "Communication", de: "Kommunikation" },
   lead: { en: "When the mobile network fails, talk locally. The more you agree beforehand, the less tech you need.", de: "Wenn das Handynetz ausfällt, wird lokal geredet. Je mehr vorher abgesprochen ist, desto weniger Technik braucht es." },
   parts: [
+    { h: { en: "Why the phone alone is not enough", de: "Warum das Handy allein nicht reicht" }, li: {
+      en: ["Your phone keeps working; the network doesn't. In the Berlin blackout of January 2026, many mobile masts ran on battery for only about 30 minutes.",
+           "There is no legal duty in Germany for masts to have backup power for a set time. Experts ask for 72 hours; it isn't law yet.",
+           "So: radio to receive news, a plan to find each other, and only then extra tech."],
+      de: ["Dein Handy läuft weiter, das Netz nicht. Beim Berliner Stromausfall im Januar 2026 hielten viele Mobilfunkmasten nur etwa 30 Minuten mit Akku durch.",
+           "In Deutschland gibt es keine gesetzliche Pflicht, Masten für eine feste Zeit mit Notstrom abzusichern. Fachleute fordern 72 Stunden; Gesetz ist das noch nicht.",
+           "Also: Radio für Nachrichten, ein Plan, wie ihr euch findet, und erst dann zusätzliche Technik."] } },
+    { h: { en: "Do you need more than your feet?", de: "Brauchst du mehr als deine Füße?" }, li: {
+      en: ["If your family and friends are within walking or cycling distance, no: agreed meeting places and times do the job, for free.",
+           "Extra tech is worth it when people are farther apart, someone can't walk, or you want to help organise the village."],
+      de: ["Wenn Familie und Freunde zu Fuß oder mit dem Rad erreichbar sind: nein. Feste Treffpunkte und Uhrzeiten reichen, und kosten nichts.",
+           "Zusätzliche Technik lohnt sich, wenn Menschen weiter weg wohnen, jemand nicht gehen kann oder du im Dorf mit organisieren willst."] } },
     { h: { en: "Layer 0: no tech", de: "Stufe 0: ohne Technik" }, li: {
       en: ["A fixed meeting place and two fixed times a day, e.g. 10:00 and 18:00.",
            "A paper notice board there: news, needs, offers, who has been checked on.",
@@ -417,7 +429,8 @@ const SECTIONS = [
            "Für Notfälle: Kat-Leuchtturm / Notfall-Meldestelle der Gemeinde. Dort werden Notrufe per Funk oder Satellitentelefon weitergegeben.",
            "Deine Kommunikationskarte in dieser App ausfüllen und ausdrucken."] } },
     { h: { en: "Layer 1: phone only", de: "Stufe 1: nur Handy" }, li: {
-      en: ["Offline messengers send messages phone-to-phone over Bluetooth or Wi-Fi, about 100 m: Briar (Android), bitchat (Android and iPhone).",
+      en: ["Offline messengers send messages phone-to-phone over Bluetooth or Wi-Fi, about 100 m: Briar (Android), bitchat (Android and iPhone). Good in a dense town, weak in a village.",
+           "Satellite SOS (iPhone 14 and later, Pixel 9 and later) reaches emergency services without a network. For emergencies only, not for chatting.",
            "Install now, while there is internet, and add your neighbours as contacts."],
       de: ["Offline-Messenger schicken Nachrichten von Handy zu Handy über Bluetooth oder WLAN, etwa 100 m: Briar (Android), bitchat (Android und iPhone).",
            "Jetzt installieren, solange es Internet gibt, und Nachbarn als Kontakte hinzufügen."] } },
@@ -430,9 +443,18 @@ const SECTIONS = [
            "Einen Kanal für die Nachbarschaft vereinbaren. Kurz funken."] } },
     { h: { en: "Layer 3: mesh radio", de: "Stufe 3: Mesh-Funk" }, li: {
       en: ["Meshtastic: small LoRa radios (about €20–40 each, 868 MHz in Europe) pass text messages from one to the next, 1–4 km per hop.",
-           "Runs for days on a small battery or a solar panel. One tech-minded neighbour with a few nodes on rooftops can connect a whole village."],
+           "Runs for days on a small battery or a solar panel. One tech-minded neighbour with a few nodes on rooftops can connect a whole village.",
+           "With nobody else nearby: build a small network yourself. One node per household, one as high as possible (attic window) as a relay. For a family about €100–150."],
       de: ["Meshtastic: kleine LoRa-Funkgeräte (etwa 20–40 € pro Stück, in Europa 868 MHz) reichen Textnachrichten weiter, 1–4 km pro Sprung.",
-           "Laufen tagelang mit kleinem Akku oder Solarpanel. Ein technikbegeisterter Nachbar mit ein paar Knoten auf Dächern verbindet ein ganzes Dorf."] } },
+           "Laufen tagelang mit kleinem Akku oder Solarpanel. Ein technikbegeisterter Nachbar mit ein paar Knoten auf Dächern verbindet ein ganzes Dorf.",
+           "Ohne andere Nutzer in der Nähe: selbst ein kleines Netz bauen. Ein Knoten pro Haushalt, einer möglichst hoch (Dachfenster) als Relais. Für eine Familie etwa 100–150 €."] } },
+    { h: { en: "Layer 4: real radio", de: "Stufe 4: richtiger Funk" }, li: {
+      en: ["CB radio: licence-free, up to 12 W (SSB). A base station with a roof antenna reaches 10–40 km. Channel 9 is the traditional emergency channel, but today mostly lorry drivers listen, not the authorities.",
+           "Amateur radio: the organised emergency radio network (DARC Notfunk). The entry licence (class N, since 2024) takes a course of about two months and an exam at the Bundesnetzagentur.",
+           "Both need power: a power station or a car battery runs them for days."],
+      de: ["CB-Funk: anmeldefrei, bis 12 W (SSB). Eine Feststation mit Dachantenne reicht 10–40 km. Kanal 9 ist der traditionelle Notrufkanal, aber heute hören vor allem Lkw-Fahrer zu, keine Behörden.",
+           "Amateurfunk: das organisierte Notfunknetz (DARC Notfunk). Die Einsteigerlizenz (Klasse N, seit 2024) braucht einen Kurs von etwa zwei Monaten und eine Prüfung bei der Bundesnetzagentur.",
+           "Beides braucht Strom: Powerstation oder Autobatterie reichen für Tage."] } },
     { h: { en: "Light governance", de: "Einfache Organisation" }, li: {
       en: ["One contact person per building or street.",
            "A list of who needs a daily check-in.",
