@@ -87,7 +87,7 @@ const Q = [
     hint: { en: "Count at normal eating. The design case is no shop open for 28 days.", de: "Bei normalem Essen gerechnet. Der Ernstfall: 28 Tage kein Laden offen." },
     opts: [{ v: "3", en: "up to 3 days", de: "bis 3 Tage" }, { v: "10", en: "about 10 days", de: "etwa 10 Tage" }, { v: "20", en: "about 3 weeks", de: "etwa 3 Wochen" }, { v: "28", en: "4 weeks or more", de: "4 Wochen oder mehr" }] },
   { id: "cook", type: "multi", en: "How can you cook without electricity?", de: "Wie kannst du ohne Strom kochen?", hint: TICK,
-    opts: [{ v: "gas", en: "Gas hob (mains gas)", de: "Gasherd (Gasleitung)" }, { v: "camping", en: "Camping stove with fuel for 4 weeks", de: "Campingkocher mit Brennstoff für 4 Wochen" }, { v: "wood", en: "Rocket stove, wood stove or fireplace", de: "Raketenofen, Holzofen oder Feuerstelle" }, { v: "none", en: "I can't", de: "Gar nicht", only1: true }] },
+    opts: [{ v: "gas", en: "Gas hob (mains gas)", de: "Gasherd (Gasleitung)" }, { v: "camping", en: "Camping stove with fuel for 4 weeks", de: "Campingkocher mit Brennstoff für 4 Wochen" }, { v: "wood", en: "Rocket stove, wood stove or fireplace", de: "Raketenofen, Holzofen oder Feuerstelle" }, { v: "electric", en: "Induction plate or kettle, run from the power station or the car", de: "Induktionsplatte oder Wasserkocher an Powerstation oder Auto" }, { v: "none", en: "I can't", de: "Gar nicht", only1: true }] },
   { id: "vit", type: "choice", en: "Something with vitamins that keeps (tinned fruit, juice, sauerkraut)?", de: "Etwas mit Vitaminen, das hält (Obstkonserven, Saft, Sauerkraut)?", opts: yn },
   // herb room: health
   { id: "aid", type: "multi", en: "First aid", de: "Erste Hilfe", hint: TICK,
@@ -119,12 +119,17 @@ const NEEDS = [
   { id: "toilet", room: "well", icon: "🚽", en: "Toilet & hygiene", de: "Toilette & Hygiene" }
 ];
 
+// Can the household cook on electricity without the grid? (induction plate at about 1 kW)
+function elecCook(a) {
+  const out = +a.station_out || { small: 300, mid: 1200, big: 2000 }[a.power] || 0;
+  return { ok: has(a, "car", "v2l") || a.generator === "yes" || (a.sine === "yes" && out >= 1000), out };
+}
 function assess(a) {
   a = normalize({ ...a });
   const n = k => +a[k] || 0, adults = Math.max(1, n("adults")), kids = n("kids"), P = adults + kids;
   const links = [], add = (id, room, need, s, en, de) => links.push({ id, room, need, s, en, de });
   const lv = {}, why = {};
-  const cookOK = has(a, "cook", "gas", "camping", "wood");
+  const cookOK = has(a, "cook", "gas", "camping", "wood") || (has(a, "cook", "electric") && elecCook(a).ok);
   const ev = has(a, "car", "ev", "v2l"), v2l = has(a, "car", "v2l"), ice = has(a, "car", "ice");
   const station = (a.power === "mid" || a.power === "big") && a.sine === "yes";
   const powerSrc = station || v2l || a.generator === "yes";
@@ -245,6 +250,8 @@ function assess(a) {
 /* ---------- exact numbers for the equipment (optional) ---------- */
 Q.push(
   { id: "station_wh", type: "num", min: 0, only: a => a.power && a.power !== "none", en: "Power station capacity in Wh (on the label)", de: "Kapazität der Powerstation in Wh (steht auf dem Gerät)" },
+  { id: "station_out", type: "num", min: 0, only: a => a.power && a.power !== "none", en: "Power station output in W (continuous, on the label)", de: "Dauerleistung der Powerstation in W (steht auf dem Gerät)",
+    hint: { en: "An induction plate on a low setting needs about 1,000 W; a kettle about 2,000 W.", de: "Eine Induktionsplatte auf niedriger Stufe braucht etwa 1.000 W, ein Wasserkocher etwa 2.000 W." } },
   { id: "solar_w", type: "num", min: 0, only: a => a.solar === "yes", en: "Solar panel power in watts", de: "Leistung des Solarpanels in Watt" },
   { id: "ev_kwh", type: "num", min: 0, only: a => has(a, "car", "ev", "v2l"), en: "Car battery in kWh", de: "Autobatterie in kWh" }
 );
@@ -279,10 +286,15 @@ function caps(a) {
   if (ev && evk) ok(true, `Car battery: about ${evk} kWh. Through the 12 V socket (about 1–2 kWh a day) it can recharge the power station for the whole 28 days.`, `Autobatterie: etwa ${evk} kWh. Über die 12-V-Buchse (etwa 1–2 kWh am Tag) kann sie die Powerstation die ganzen 28 Tage nachladen.`);
   if (wh) ok(true, `Power station: ${fmtN(wh)} Wh ≈ ${Math.round(wh * 0.85 / 15)} phone charges or about ${Math.round(wh * 0.85 / 5)} hours of LED light per charge.` + (solarDay ? ` The panel adds about ${fmtN(solarDay)} Wh on a winter day, more when sunny.` : ""),
                 `Powerstation: ${fmtN(wh)} Wh ≈ ${Math.round(wh * 0.85 / 15)} Handyladungen oder etwa ${Math.round(wh * 0.85 / 5)} Stunden LED-Licht pro Ladung.` + (solarDay ? ` Das Panel bringt an einem Wintertag etwa ${fmtN(solarDay)} Wh, bei Sonne mehr.` : ""));
-  if (wh && wh < 1500) ok(false, "Cooking on electricity: an induction plate needs about 2 kW, too much for this power station.", "Elektrisch kochen: ein Induktionsfeld braucht etwa 2 kW, zu viel für diese Powerstation.");
+  const ec = elecCook(a), meal = 0.1 * P + 0.05; // kWh for one hot meal: about 15–20 min at ~1 kW for a pot for the household
+  if (has(a, "cook", "electric") || wh) {
+    if (ec.ok) ok(true, `Cooking on electricity: an induction plate on a low setting (about 1 kW) works` + (wh ? `. One hot meal for ${P} uses about ${fmtN(meal * 1000)} Wh, so about ${Math.max(1, Math.floor(wh * 0.85 / 1000 / meal))} meals per charge; it shares the battery with the heating.` : "."),
+                        `Elektrisch kochen: eine Induktionsplatte auf niedriger Stufe (etwa 1 kW) geht` + (wh ? `. Eine warme Mahlzeit für ${P} braucht etwa ${fmtN(meal * 1000)} Wh, also etwa ${Math.max(1, Math.floor(wh * 0.85 / 1000 / meal))} Mahlzeiten pro Ladung; sie teilt sich den Akku mit der Heizung.` : "."));
+    else ok(false, `Cooking on electricity: an induction plate needs about 1,000 W; this power station gives ${ec.out ? fmtN(ec.out) + " W" : "too little"}.`, `Elektrisch kochen: eine Induktionsplatte braucht etwa 1.000 W; diese Powerstation liefert ${ec.out ? fmtN(ec.out) + " W" : "zu wenig"}.`);
+  }
   // cooking, water, food, info, cash
-  const CT = { gas: ["gas hob", "Gasherd"], camping: ["camping stove", "Campingkocher"], wood: ["rocket or wood stove", "Raketen- oder Holzofen"] };
-  const cs = arr(a.cook).filter(x => CT[x]), cookTxt = cs.length ? [cs.map(x => CT[x][0]).join(", "), cs.map(x => CT[x][1]).join(", ")] : null;
+  const CT = { gas: ["gas hob", "Gasherd"], camping: ["camping stove", "Campingkocher"], wood: ["rocket or wood stove", "Raketen- oder Holzofen"], electric: ["induction plate on battery power", "Induktionsplatte am Akku"] };
+  const cs = arr(a.cook).filter(x => CT[x] && (x !== "electric" || ec.ok)), cookTxt = cs.length ? [cs.map(x => CT[x][0]).join(", "), cs.map(x => CT[x][1]).join(", ")] : null;
   ok(!!cookTxt, cookTxt ? `Cooking without power: ${cookTxt[0]}.` : "Cooking without power: not possible yet. Oats, tins and nuts need no fire.", cookTxt ? `Kochen ohne Strom: ${cookTxt[1]}.` : "Kochen ohne Strom: noch nicht möglich. Haferflocken, Konserven und Nüsse brauchen kein Feuer.");
   const d = Math.floor(n("water_l") / (P * 2)), tr = has(a, "treat", "filter", "tabs");
   ok(d >= 14 || tr, `Water: ${n("water_l")} L stored ≈ ${d} days for ${P}.` + (tr ? " After that, filter or tablets make rain or well water drinkable." : " Nothing to make other water safe."), `Wasser: ${n("water_l")} L Vorrat ≈ ${d} Tage für ${P}.` + (tr ? " Danach machen Filter oder Tabletten Regen- oder Brunnenwasser trinkbar." : " Nichts, um anderes Wasser trinkbar zu machen."));

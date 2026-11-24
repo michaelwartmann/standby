@@ -40,7 +40,7 @@ const ROOMS = [
 const ROOM_Q = {
   well: ["water_l", "treat", "canisters", "toilet", "hygiene"], kitchen: ["food", "cook", "vit"],
   hearth: ["heating", "wood", "warmroom", "sleep", "tent", "blankets"],
-  workshop: ["power", "station_wh", "sine", "plug", "car", "ev_kwh", "solar", "solar_w", "generator", "tools"], herbs: ["aid", "meds"],
+  workshop: ["power", "station_wh", "station_out", "sine", "plug", "car", "ev_kwh", "solar", "solar_w", "generator", "tools"], herbs: ["aid", "meds"],
   hall: ["neigh", "refuge"], bard: ["mind"], gate: ["safety", "cash"], signal: ["radio", "meet"], lantern: ["light", "banks"]
 };
 
