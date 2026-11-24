@@ -434,7 +434,7 @@ function moveHTML() {
     <div class="field"><label for="mvIn">${esc(t("pasteHere"))}</label><textarea id="mvIn" rows="3" spellcheck="false" autocomplete="off"></textarea></div>
     <div class="actions"><button type="button" id="mvLoad">${esc(t("loadCode"))}</button></div><p class="hint" id="mvMsg" aria-live="polite"></p></details>`;
 }
-const exportCode = () => "standby1:" + btoa(unescape(encodeURIComponent(JSON.stringify({ ans: store.ans, card: store.card, done: store.done || {} }))));
+const exportCode = () => "standby1:" + btoa(unescape(encodeURIComponent(JSON.stringify({ ans: store.ans, card: store.card, done: store.done || {}, place: store.place || "" }))));
 function wireMove() {
   const m = id => document.getElementById(id), msg = x => { m("mvMsg").textContent = t(x); };
   if (!m("move")) return;
@@ -442,19 +442,26 @@ function wireMove() {
   if (m("mvShare")) m("mvShare").onclick = () => navigator.share({ title: "Standby", text: exportCode() }).catch(() => {});
   m("mvLoad").onclick = () => { try { const v = m("mvIn").value.trim(); if (!v.startsWith("standby1:")) throw 0;
       const d = JSON.parse(decodeURIComponent(escape(atob(v.slice(9))))); if (!d.ans) throw 0;
-      store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; save(); msg("loaded"); setTimeout(render, 600); } catch (e) { msg("badCode"); } };
+      store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; if (d.place) store.place = d.place; save(); msg("loaded"); setTimeout(render, 600); } catch (e) { msg("badCode"); } };
 }
 /* ---------- do it now: errands by shop ---------- */
-function mapsLink(q) {
-  const ua = navigator.userAgent, term = encodeURIComponent(q);
-  if (/iPhone|iPad|Macintosh/.test(ua)) return `https://maps.apple.com/?q=${term}`;
-  if (/Android/.test(ua)) return `geo:0,0?q=${term}`;
-  return `https://www.openstreetmap.org/search?query=${term}`;
+// Map search near the place the user typed. Phones open their own maps app; elsewhere Google Maps,
+// with OpenStreetMap as a second link. Nothing is sent anywhere until the user taps.
+function mapsLinks(q) {
+  const place = (store.place || "").trim(), term = place ? `${q} ${place}` : q, e = encodeURIComponent(term), ua = navigator.userAgent;
+  const main = /iPhone|iPad/.test(ua) ? `https://maps.apple.com/?q=${e}` : /Android/.test(ua) ? `geo:0,0?q=${e}` : `https://www.google.com/maps/search/?api=1&query=${e}`;
+  return { main, osm: `https://www.openstreetmap.org/search?query=${encodeURIComponent(place ? `${q} in ${place}` : q)}` };
+}
+function wirePlace() {
+  const i = document.getElementById("placeIn"); if (!i) return;
+  i.addEventListener("input", () => { store.place = i.value; save();
+    document.querySelectorAll("p.maps").forEach(p => { const m = mapsLinks(p.dataset.q); p.querySelector(".mmain").href = m.main; p.querySelector(".mosm").href = m.osm; }); });
 }
 function viewErrands() {
   const list = gaps(store.ans), groups = errands(store.ans, list), now = new Date(), done = store.done || {};
   const hhmm = now.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
   let h = `<h1>🛒 ${esc(t("errH"))}</h1><p class="lead">${esc(t("errLead"))}</p><p><b>${esc(t("nowIs"))}</b> ${esc(t("days7")[now.getDay()])}, ${esc(hhmm)}</p>`;
+  h += `<div class="field noprint"><label for="placeIn">${esc(t("placeL"))}</label><input id="placeIn" type="text" autocomplete="postal-code" placeholder="${esc(t("placeP"))}" value="${esc(store.place || "")}"><p class="hint">${esc(t("placeH"))}</p></div>`;
   if (!list.length) return h + `<p>${esc(t("allok"))}</p>`;
   const next = list.filter(x => !done[x.id]).slice(0, 3);
   h += `<div class="card"><h2>${esc(t("nextH"))}</h2><ol>${next.map(x => `<li>${esc(x[lang] || x.en)}</li>`).join("")}</ol></div>`;
@@ -463,7 +470,7 @@ function viewErrands() {
     h += `<section class="card shop"><h2><span aria-hidden="true">${st.icon}</span> ${esc(L(st))}</h2>`;
     if (o !== null) h += `<p class="hint"><span class="open ${o ? "y" : "n"}">${esc(t(o ? "openYes" : "openNo"))}</span>${st.hint ? " · " + esc(L(st.hint)) : ""}</p>`;
     h += `<ul class="todos">` + g.items.map(x => `<li class="todo ${x.s}${done[x.id] ? " done" : ""}"><label><input type="checkbox" data-done="${x.id}"${done[x.id] ? " checked" : ""}><span class="tt">${esc(x[lang] || x.en)}</span></label></li>`).join("") + `</ul>`;
-    if (st.q) h += `<p class="noprint"><a class="btn" href="${mapsLink(L(st.q))}" target="_blank" rel="noopener">📍 ${esc(t("findNear"))}: ${esc(L(st.q))}</a></p>`;
+    if (st.q) { const m = mapsLinks(L(st.q)); h += `<p class="noprint maps" data-q="${esc(L(st.q))}"><a class="btn mmain" href="${m.main}" target="_blank" rel="noopener">📍 ${esc(t("findNear"))}: ${esc(L(st.q))}</a> <a class="mosm" href="${m.osm}" target="_blank" rel="noopener">OpenStreetMap</a></p>`; }
     h += `</section>`;
   }
   h += `<p class="hint">${esc(t("hoursNote"))}</p><div class="actions"><button type="button" onclick="window.print()">${esc(t("print"))}</button><a class="btn" href="#plan">📜 ${esc(t("planH"))} →</a></div>`;
@@ -513,7 +520,7 @@ function render() {
   let r = (location.hash || "#").slice(1);
   if (r.startsWith("load=")) { try { const v = decodeURIComponent(r.slice(5)); if (!v.startsWith("standby1:")) throw 0;
       const d = JSON.parse(decodeURIComponent(escape(atob(v.slice(9))))); if (!d.ans) throw 0;
-      store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; save(); } catch (e) {}
+      store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; if (d.place) store.place = d.place; save(); } catch (e) {}
     history.replaceState(null, "", location.pathname + location.search + "#errands"); r = "errands"; }
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
@@ -525,7 +532,7 @@ function render() {
   else if (r === "all") { app.innerHTML = backBtn() + viewAll(); title += " · " + t("all"); }
   else if (r.startsWith("room/") && ROOM[r.slice(5)]) { const id = r.slice(5); app.innerHTML = backBtn() + viewRoom(id) + backBtn(); title += " · " + L(ROOM[id].t); wireRoom(id); }
   else if (r === "plan") { app.innerHTML = backBtn() + `<section id="result">${resultHTML()}</section>` + moveHTML() + backBtn(); title += " · " + t("planH"); wireTodos(document.getElementById("result")); wireMove(); }
-  else if (r === "errands") { app.innerHTML = backBtn() + `<section id="errands">${viewErrands()}</section>` + backBtn(); title += " · " + t("errH"); wireTodos(document.getElementById("errands")); }
+  else if (r === "errands") { app.innerHTML = backBtn() + `<section id="errands">${viewErrands()}</section>` + backBtn(); title += " · " + t("errH"); wireTodos(document.getElementById("errands")); wirePlace(); }
   else if (r === "crew") { app.innerHTML = backBtn() + viewCrew() + backBtn(); title += " · " + t("crew"); }
   else if (SEC[r]) { app.innerHTML = backBtn() + sectionHTML(SEC[r]) + backBtn(); title += " · " + L(SEC[r].t); }
   else { app.innerHTML = viewHome(); title += " – " + t("hero"); document.getElementById("knockBtn").onclick = knock; }
