@@ -445,17 +445,18 @@ function wireMove() {
       store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; if (d.place) store.place = d.place; save(); msg("loaded"); setTimeout(render, 600); } catch (e) { msg("badCode"); } };
 }
 /* ---------- do it now: errands by shop ---------- */
-// Map search near the place the user typed. Phones open their own maps app; elsewhere Google Maps,
-// with OpenStreetMap as a second link. Nothing is sent anywhere until the user taps.
+// Map search near the place the user typed. Phones open their own maps app (geo: lets Android pick any
+// installed map, also outside Google's reach); computers get Google Maps. OpenStreetMap's search was tried
+// and dropped: it only finds shops inside the town's borders, not the nearest one.
 function mapsLinks(q) {
   const place = (store.place || "").trim(), term = place ? `${q} ${place}` : q, e = encodeURIComponent(term), ua = navigator.userAgent;
   const main = /iPhone|iPad/.test(ua) ? `https://maps.apple.com/?q=${e}` : /Android/.test(ua) ? `geo:0,0?q=${e}` : `https://www.google.com/maps/search/?api=1&query=${e}`;
-  return { main, osm: `https://www.openstreetmap.org/search?query=${encodeURIComponent(place ? `${q} in ${place}` : q)}` };
+  return { main };
 }
 function wirePlace() {
   const i = document.getElementById("placeIn"); if (!i) return;
   i.addEventListener("input", () => { store.place = i.value; save();
-    document.querySelectorAll("p.maps").forEach(p => { const m = mapsLinks(p.dataset.q); p.querySelector(".mmain").href = m.main; p.querySelector(".mosm").href = m.osm; }); });
+    document.querySelectorAll("p.maps").forEach(p => { const m = mapsLinks(p.dataset.q); p.querySelector(".mmain").href = m.main; }); });
 }
 function viewErrands() {
   const list = gaps(store.ans), groups = errands(store.ans, list), now = new Date(), done = store.done || {};
@@ -470,7 +471,7 @@ function viewErrands() {
     h += `<section class="card shop"><h2><span aria-hidden="true">${st.icon}</span> ${esc(L(st))}</h2>`;
     if (o !== null) h += `<p class="hint"><span class="open ${o ? "y" : "n"}">${esc(t(o ? "openYes" : "openNo"))}</span>${st.hint ? " · " + esc(L(st.hint)) : ""}</p>`;
     h += `<ul class="todos">` + g.items.map(x => `<li class="todo ${x.s}${done[x.id] ? " done" : ""}"><label><input type="checkbox" data-done="${x.id}"${done[x.id] ? " checked" : ""}><span class="tt">${esc(x[lang] || x.en)}</span></label></li>`).join("") + `</ul>`;
-    if (st.q) { const m = mapsLinks(L(st.q)); h += `<p class="noprint maps" data-q="${esc(L(st.q))}"><a class="btn mmain" href="${m.main}" target="_blank" rel="noopener">📍 ${esc(t("findNear"))}: ${esc(L(st.q))}</a> <a class="mosm" href="${m.osm}" target="_blank" rel="noopener">OpenStreetMap</a></p>`; }
+    if (st.q) { const m = mapsLinks(L(st.q)); h += `<p class="noprint maps" data-q="${esc(L(st.q))}"><a class="btn mmain" href="${m.main}" target="_blank" rel="noopener">📍 ${esc(t("findNear"))}: ${esc(L(st.q))}</a></p>`; }
     h += `</section>`;
   }
   h += `<p class="hint">${esc(t("hoursNote"))}</p><div class="actions"><button type="button" onclick="window.print()">${esc(t("print"))}</button><a class="btn" href="#plan">📜 ${esc(t("planH"))} →</a></div>`;
