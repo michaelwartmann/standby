@@ -13,9 +13,9 @@ const ROOMS = [
   { id: "hearth", icon: "🔥", sec: ["warmth"], who: "fox", box: [50.8, 61.4, 29.9, 9.8],
     t: { en: "The Hearth", de: "Die Feuerstelle" },
     lead: { en: "One warm room, warm people.", de: "Ein warmer Raum, warme Menschen." } },
-  { id: "workshop", icon: "🔧", sec: ["tech"], who: null, helper: "ylva", box: [26.7, 60.5, 24.1, 10.7],
+  { id: "workshop", icon: "🔧", sec: ["power", "tech"], who: null, helper: "ylva", box: [26.7, 60.5, 24.1, 10.7],
     t: { en: "The Workshop", de: "Die Werkstatt" },
-    lead: { en: "Tools, valves, fuses: fix it yourself.", de: "Werkzeug, Ventile, Sicherungen: selbst reparieren." } },
+    lead: { en: "Power links: battery, car, solar, the plug on the boiler, tools.", de: "Stromkette: Akku, Auto, Solar, der Stecker an der Heizung, Werkzeug." } },
   { id: "herbs", icon: "🩹", sec: ["health"], who: null, helper: "oma", box: [28, 51.2, 22.8, 9.3],
     t: { en: "The Herb Room", de: "Die Kräuterkammer" },
     lead: { en: "First aid when 112 is slow.", de: "Erste Hilfe, wenn 112 nicht schnell kommt." } },
@@ -38,9 +38,10 @@ const ROOMS = [
 
 // Which questions belong to which room (ids from Q in index.html).
 const ROOM_Q = {
-  well: ["water_l", "treat", "floor", "toilet"], kitchen: ["food", "cook"], hearth: ["heat", "sleep"],
-  workshop: ["tools"], herbs: ["aid"], hall: ["neigh"], bard: ["mind"], gate: ["safety", "cash"],
-  signal: ["radio", "meet"], lantern: ["light", "power"]
+  well: ["water_l", "treat", "canisters", "toilet", "hygiene"], kitchen: ["food", "cook", "vit"],
+  hearth: ["heating", "wood", "warmroom", "sleep", "tent", "blankets"],
+  workshop: ["power", "sine", "plug", "car", "solar", "generator", "tools"], herbs: ["aid", "meds"],
+  hall: ["neigh", "refuge"], bard: ["mind"], gate: ["safety", "cash"], signal: ["radio", "meet"], lantern: ["light", "banks"]
 };
 
 const VISITORS = {
@@ -119,6 +120,9 @@ const QUEST = {
     omaTxt: "The neighbour who remembers how people managed before electricity. Runs the herb room, knows every bandage and every soup.",
     folkTxt: "The village below the tower: the baker, the grandfather, a mother with her toddler, two kids. Nobody gets through four weeks alone.",
     resultNights: "Your castle holds about", roomsReady: "rooms ready",
+    planH: "Your battle plan", planSub: "Your levels and the links still missing", planLead: "Planned for the worst case: the whole country without power for 28 winter days, nothing coming in. Each need is a chain; here is how far yours reach and what is missing.",
+    todoH: "Links to close", todoHint: "Most important first. Tick off what you've done; then update the answer in the room so the castle counts it.",
+    chainsH: "Your five chains", verdictH: "Can this home hold?",
     more: "More", now: "Hour by hour", nowSub: "The power is out: what to do first"
   },
   de: {
@@ -142,6 +146,9 @@ const QUEST = {
     omaTxt: "Die Nachbarin, die noch weiß, wie man ohne Strom zurechtkam. Führt die Kräuterkammer, kennt jeden Verband und jede Suppe.",
     folkTxt: "Das Dorf unter dem Turm: der Bäcker, der Großvater, eine Mutter mit Kleinkind, zwei Kinder. Vier Wochen schafft niemand allein.",
     resultNights: "Deine Burg hält etwa", roomsReady: "Räume bereit",
+    planH: "Dein Schlachtplan", planSub: "Deine Stufen und die fehlenden Glieder", planLead: "Geplant für den Ernstfall: das ganze Land 28 Wintertage ohne Strom, kein Nachschub. Jedes Bedürfnis ist eine Kette; hier siehst du, wie weit deine reichen und was fehlt.",
+    todoH: "Fehlende Glieder", todoHint: "Das Wichtigste zuerst. Hak ab, was erledigt ist; dann die Antwort im Raum ändern, damit die Burg es zählt.",
+    chainsH: "Deine fünf Ketten", verdictH: "Hält dieses Zuhause?",
     more: "Mehr", now: "Stunde für Stunde", nowSub: "Der Strom ist weg: was zuerst tun"
   }
 };

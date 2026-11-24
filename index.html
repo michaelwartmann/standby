@@ -62,6 +62,21 @@ table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px 6px;
 details summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-weight:600}
 footer{color:var(--soft);font-size:.85em;margin-top:28px}footer a{color:var(--accent)}
 .note{border:1px dashed var(--line);border-radius:12px;padding:10px 14px;color:var(--soft);font-size:.9em}
+/* chains, plan, to-dos */
+.chains{display:grid;gap:6px;margin:12px 0 4px}
+.chain{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(5.5em,auto);align-items:center;gap:10px;color:var(--ink);text-decoration:none;min-height:40px}
+.chain .cn{font-weight:600;overflow-wrap:break-word;hyphens:auto}.chain .cl{color:var(--soft);font-size:.85em}
+.bars{display:inline-grid;grid-template-columns:repeat(3,22px);gap:3px}.bars i{height:12px;border-radius:3px;background:var(--line)}
+.bars.l1 i:nth-child(-n+1),.bars.l2 i:nth-child(-n+2),.bars.l3 i{background:var(--green)}
+.bars.l1 i:first-child{background:var(--amber)}
+.need{padding:10px 14px}.need .hint{margin:4px 0 0}
+.verdict{border-width:6px}
+.todos{list-style:none;padding:0;margin:8px 0}
+.todo{border-left:6px solid var(--line);background:var(--card);border-radius:12px;margin:8px 0}
+.todo.r{border-color:var(--red)}.todo.a{border-color:var(--amber)}
+.todo label{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;cursor:pointer}
+.todo input{width:24px;height:24px;margin-top:3px;flex:none;accent-color:var(--green)}
+.todo .tt{display:block;margin-top:2px}.todo.done{opacity:.6}.todo.done .tt{text-decoration:line-through}
 .print-only{display:none}
 /* castle quest */
 .hero{position:relative;margin:4px -16px 0;overflow:hidden}
@@ -125,6 +140,7 @@ footer{color:var(--soft);font-size:.85em;margin-top:28px}footer a{color:var(--ac
 
 <script src="content.js"></script>
 <script src="quest.js"></script>
+<script src="plan.js"></script>
 <script>
 "use strict";
 /* ---------- texts ---------- */
@@ -140,7 +156,7 @@ const UI = {
     install: "Put it on your home screen", inst1: "Android (Chrome): menu ⋮ → “Install app” or “Add to Home screen”.",
     inst2: "iPhone (Safari): Share button □↑ → “Add to Home Screen”.", inst3: "After the first visit it works without internet.",
     f1: "Free, no ads, no account, no tracking. Not medical advice; do a first-aid course.", f2: "Source code (MIT)", f3: "More apps",
-    print: "Print / save as PDF", showGaps: "Show my gaps", gapsH: "Your gap list",
+    print: "Print / save as PDF", showGaps: "Show my plan", gapsH: "Your gap list",
     R: "MISSING", A: "WEAK", G: "OK", allok: "No gaps. Check again every few months.",
     checkLead: "Answers stay on this phone. You can come back and change them any time.",
     readyLead: "Based on the BBK checklist (per person per 10 days), scaled to your household. Buy what you eat anyway.",
@@ -165,7 +181,7 @@ const UI = {
     install: "Auf den Startbildschirm legen", inst1: "Android (Chrome): Menü ⋮ → „App installieren“ oder „Zum Startbildschirm“.",
     inst2: "iPhone (Safari): Teilen □↑ → „Zum Home-Bildschirm“.", inst3: "Nach dem ersten Besuch geht sie ohne Internet.",
     f1: "Kostenlos, ohne Werbung, ohne Konto, ohne Tracking. Keine medizinische Beratung; mach einen Erste-Hilfe-Kurs.", f2: "Quellcode (MIT)", f3: "Weitere Apps",
-    print: "Drucken / als PDF speichern", showGaps: "Meine Lücken zeigen", gapsH: "Deine Lückenliste",
+    print: "Drucken / als PDF speichern", showGaps: "Meinen Plan zeigen", gapsH: "Deine Lückenliste",
     R: "FEHLT", A: "SCHWACH", G: "OK", allok: "Keine Lücken. Alle paar Monate wieder prüfen.",
     checkLead: "Die Antworten bleiben auf diesem Handy. Du kannst jederzeit zurückkommen und sie ändern.",
     readyLead: "Nach der BBK-Checkliste (pro Person für 10 Tage), hochgerechnet auf deinen Haushalt. Kauf, was ihr sowieso esst.",
@@ -196,103 +212,9 @@ const SEC_ROOM = { water: "well", toilet: "well", food: "kitchen", warmth: "hear
 const LN = v => typeof v === "string" ? v : L(v);
 const img = (name, alt, cls) => `<img src="art/${name}.webp" alt="${esc(alt || "")}"${cls ? ` class="${cls}"` : ""} loading="lazy" decoding="async">`;
 
-/* ---------- questionnaire ---------- */
-const yn = [{ v: "yes", en: "Yes", de: "Ja" }, { v: "no", en: "No", de: "Nein" }];
-const Q = [
-  { group: { en: "Your household", de: "Dein Haushalt" } },
-  { id: "adults", type: "num", def: 1, min: 1, en: "Adults (14 and over)", de: "Erwachsene (ab 14)" },
-  { id: "kids", type: "num", def: 0, min: 0, en: "Children (under 14)", de: "Kinder (unter 14)" },
-  { id: "days", type: "choice", def: "28", en: "Plan for how long?", de: "Für wie lange planen?",
-    opts: [{ v: "10", en: "10 days (official minimum)", de: "10 Tage (offizielles Minimum)" }, { v: "14", en: "2 weeks", de: "2 Wochen" }, { v: "28", en: "4 weeks", de: "4 Wochen" }] },
-  { id: "floor", type: "choice", def: "low", en: "Where do you live?", de: "Wo wohnst du?",
-    opts: [{ v: "low", en: "House, or flat up to 3rd floor", de: "Haus oder Wohnung bis 3. Stock" }, { v: "high", en: "Flat on 4th floor or higher", de: "Wohnung ab 4. Stock" }] },
-  { group: { en: "Water", de: "Wasser" } },
-  { id: "water_l", type: "num", def: 0, min: 0, en: "Drinking water stored at home (litres, all bottles together)", de: "Trinkwasser zu Hause (Liter, alle Flaschen zusammen)" },
-  { id: "treat", type: "choice", en: "Can you make water safe to drink?", de: "Kannst du Wasser trinkbar machen?",
-    opts: [{ v: "filter", en: "Yes: water filter or disinfection tablets", de: "Ja: Wasserfilter oder Entkeimungstabletten" }, { v: "boil", en: "Only by boiling (stove without power)", de: "Nur abkochen (Kocher ohne Strom)" }, { v: "none", en: "No", de: "Nein" }] },
-  { group: { en: "Warmth", de: "Wärme" } },
-  { id: "heat", type: "choice", en: "How is your home heated?", de: "Wie wird geheizt?",
-    hint: { en: "Almost all central heating needs electricity for pumps and controls.", de: "Fast jede Zentralheizung braucht Strom für Pumpe und Steuerung." },
-    opts: [{ v: "boiler", en: "Gas or oil boiler", de: "Gas- oder Ölheizung" }, { v: "electric", en: "Heat pump or electric", de: "Wärmepumpe oder elektrisch" }, { v: "district", en: "District heating", de: "Fernwärme" }, { v: "wood", en: "Wood or tiled stove that runs without power", de: "Holz- oder Kachelofen ohne Strom" }] },
-  { id: "sleep", type: "choice", en: "Warm sleeping bag or thick duvet for everyone?", de: "Warmer Schlafsack oder dicke Decke für alle?",
-    opts: [{ v: "all", en: "Yes, for everyone", de: "Ja, für alle" }, { v: "some", en: "For some", de: "Für manche" }, { v: "none", en: "No", de: "Nein" }] },
-  { id: "safety", type: "choice", en: "Battery CO alarm and fire blanket or extinguisher?", de: "CO-Melder mit Batterie und Löschdecke oder Feuerlöscher?",
-    hint: { en: "Candles, camping stoves and makeshift heating cause fires and carbon-monoxide poisoning.", de: "Kerzen, Campingkocher und Notheizungen verursachen Brände und CO-Vergiftungen." },
-    opts: [{ v: "both", en: "Both", de: "Beides" }, { v: "one", en: "One of them", de: "Eins davon" }, { v: "none", en: "Neither", de: "Keins" }] },
-  { group: { en: "Food & toilet", de: "Essen & Toilette" } },
-  { id: "food", type: "choice", en: "Without shopping and without a fridge, your food lasts…", de: "Ohne Einkaufen und ohne Kühlschrank reicht dein Essen…",
-    opts: [{ v: "3", en: "up to 3 days", de: "bis 3 Tage" }, { v: "10", en: "3–10 days", de: "3–10 Tage" }, { v: "20", en: "10–20 days", de: "10–20 Tage" }, { v: "28", en: "more than 20 days", de: "mehr als 20 Tage" }] },
-  { id: "cook", type: "choice", en: "Can you cook without power (camping stove + fuel, wood stove)?", de: "Kannst du ohne Strom kochen (Campingkocher + Brennstoff, Holzofen)?", opts: yn },
-  { id: "toilet", type: "choice", en: "Emergency toilet ready (bucket, strong bags, cat litter or sawdust)?", de: "Nottoilette bereit (Eimer, feste Beutel, Katzenstreu oder Sägespäne)?",
-    hint: { en: "Without power, flushing and sewage can stop.", de: "Ohne Strom können Spülung und Abwasser ausfallen." }, opts: yn },
-  { group: { en: "Light, power, information", de: "Licht, Strom, Information" } },
-  { id: "light", type: "choice", en: "Torch or headlamp for everyone, with spare batteries?", de: "Taschen- oder Stirnlampe für alle, mit Ersatzbatterien?", opts: yn },
-  { id: "power", type: "choice", en: "How can you charge your phone?", de: "Wie lädst du dein Handy?",
-    opts: [{ v: "none", en: "I can't", de: "Gar nicht" }, { v: "small", en: "Small power bank (under 10,000 mAh)", de: "Kleine Powerbank (unter 10.000 mAh)" }, { v: "big", en: "Big power bank (20,000 mAh or more)", de: "Große Powerbank (ab 20.000 mAh)" }, { v: "solar", en: "Power bank + solar panel", de: "Powerbank + Solarpanel" }] },
-  { id: "radio", type: "choice", en: "Battery, crank or solar radio?", de: "Radio mit Batterie, Kurbel oder Solar?", opts: yn },
-  { id: "cash", type: "choice", en: "Some cash at home (card payment may not work)?", de: "Etwas Bargeld zu Hause (Kartenzahlung kann ausfallen)?", opts: yn },
-  { group: { en: "Health, tools, people", de: "Gesundheit, Werkzeug, Menschen" } },
-  { id: "aid", type: "choice", en: "First aid", de: "Erste Hilfe",
-    opts: [{ v: "both", en: "Kit at home + first-aid course in the last 5 years", de: "Verbandkasten + Erste-Hilfe-Kurs in den letzten 5 Jahren" }, { v: "kit", en: "Kit only", de: "Nur Verbandkasten" }, { v: "none", en: "Neither", de: "Keins" }] },
-  { id: "tools", type: "choice", en: "Basic tools, and do you know where the main water valve and fuse box are?", de: "Grundwerkzeug, und weißt du, wo Hauptwasserhahn und Sicherungskasten sind?", opts: yn },
-  { id: "neigh", type: "choice", en: "How many neighbours do you know well enough to knock on their door?", de: "Wie viele Nachbarn kennst du gut genug, um zu klingeln?",
-    opts: [{ v: "0", en: "None", de: "Keine" }, { v: "1", en: "1–2", de: "1–2" }, { v: "3", en: "3 or more", de: "3 oder mehr" }] },
-  { id: "meet", type: "choice", en: "Do you know your town's emergency point (Kat-Leuchtturm / Notfall-Treffpunkt)?", de: "Kennst du den Notfall-Treffpunkt / Kat-Leuchtturm deiner Gemeinde?", opts: yn },
-  { id: "mind", type: "choice", en: "Books, cards, games – things to do without power?", de: "Bücher, Karten, Spiele – Beschäftigung ohne Strom?", opts: yn }
-];
-
-function gaps(a) {
-  const out = [], add = (sec, s, en, de, room) => out.push({ sec, s, en, de, room: room || SEC_ROOM[sec] });
-  const people = Math.max(1, (+a.adults || 0) + (+a.kids || 0)), days = +a.days || 28;
-  const dEn = n => n + (n === 1 ? " day" : " days"), dDe = n => n + (n === 1 ? " Tag" : " Tage");
-  // Water: BBK 2 L/person/day. Target 14 days stored + a way to treat water.
-  const wl = +a.water_l || 0, wDays = Math.floor(wl / (people * 2)), goal = Math.min(14, days), need = people * 2 * goal;
-  if (wDays >= goal) add("water", "g", `Stored water lasts about ${dEn(wDays)}.`, `Wasservorrat reicht etwa ${dDe(wDays)}.`);
-  else add("water", wDays >= 3 ? "a" : "r",
-    `Water lasts about ${dEn(wDays)}. Add ${Math.ceil(need - wl)} L (crates of bottled water) to reach ${goal} days. At the first sign of an outage, fill pots, bottles and the bathtub.`,
-    `Wasser reicht etwa ${dDe(wDays)}. ${Math.ceil(need - wl)} L dazukaufen (Kisten Mineralwasser) für ${goal} Tage. Beim Stromausfall sofort Töpfe, Flaschen und Badewanne füllen.`);
-  if (a.treat === "none") add("water", days > 14 ? "r" : "a", "No way to make water safe. A simple water filter or disinfection tablets cost about €10–30.", "Keine Möglichkeit, Wasser trinkbar zu machen. Ein einfacher Wasserfilter oder Entkeimungstabletten kosten etwa 10–30 €.");
-  else if (a.treat === "boil") add("water", "a", "Boiling only works while you have fuel. Add a filter or tablets as backup.", "Abkochen geht nur, solange Brennstoff da ist. Filter oder Tabletten als Reserve.");
-  if (a.floor === "high") add("water", "a", "Upper floors lose water pressure first. Store more water and fill containers early.", "Obere Stockwerke verlieren zuerst den Wasserdruck. Mehr Wasser lagern und früh Behälter füllen.");
-  // Warmth
-  const heatOff = a.heat && a.heat !== "wood";
-  if (heatOff) add("warmth", a.sleep === "all" ? "a" : "r",
-    "Your heating will stop. Plan one warm room for everyone: wool layers, hats, blankets on windows, a warm sleeping bag per person (~€40, comfort around 0 °C).",
-    "Deine Heizung fällt aus. Plane einen warmen Raum für alle: Wolle in Schichten, Mützen, Decken vor die Fenster, ein warmer Schlafsack pro Person (~40 €, Komfort um 0 °C).");
-  else if (a.heat === "wood") add("warmth", a.sleep === "all" ? "g" : "a", "Your stove works without power. Make sure you have dry wood for the full period.", "Dein Ofen läuft ohne Strom. Genug trockenes Holz für den ganzen Zeitraum bereithalten.");
-  if (!heatOff && a.sleep && a.sleep !== "all") add("warmth", "a", "Get a warm sleeping bag or thick duvet for everyone.", "Warmen Schlafsack oder dicke Decke für alle besorgen.");
-  // Safety
-  if (a.safety === "none") add("tech", "r", "Get a battery CO alarm (~€25) and a fire blanket (~€15). Never use grills, gas heaters or generators indoors.", "CO-Melder mit Batterie (~25 €) und Löschdecke (~15 €) besorgen. Nie Grill, Gasheizer oder Generator in Innenräumen.", "gate");
-  else if (a.safety === "one") add("tech", "a", "Complete the pair: battery CO alarm + fire blanket or extinguisher.", "Paar vervollständigen: CO-Melder + Löschdecke oder Feuerlöscher.", "gate");
-  // Toilet
-  if (a.toilet === "no") add("toilet", "r", "Prepare an emergency toilet: bucket, strong bin bags, cat litter or sawdust (~€15). Plus soap, wet wipes, disinfectant.", "Nottoilette vorbereiten: Eimer, feste Müllbeutel, Katzenstreu oder Sägespäne (~15 €). Dazu Seife, Feuchttücher, Desinfektion.");
-  // Food (BBK per person per 10 days: 3.5 kg grains, 4.0 kg veg/pulses, 2.4 kg fruit/nuts)
-  if (a.food) {
-    const f = +a.food, k = people * days / 10, g = Math.round(3.5 * k), v = Math.round(4 * k), n = Math.round(2.4 * k);
-    if (f >= Math.min(20, days)) add("food", "g", "Food stock looks good. Eat from it and refill, so nothing expires.", "Vorrat sieht gut aus. Davon essen und nachkaufen, damit nichts abläuft.");
-    else add("food", f <= 3 ? "r" : "a",
-      `For ${days} days your household needs roughly ${g} kg grains (rice, oats, pasta), ${v} kg vegetables and pulses (tins, jars, lentils), ${n} kg fruit and nuts. Full list in the stock calculator.`,
-      `Für ${days} Tage braucht dein Haushalt etwa ${g} kg Getreide (Reis, Haferflocken, Nudeln), ${v} kg Gemüse und Hülsenfrüchte (Dosen, Gläser, Linsen), ${n} kg Obst und Nüsse. Ganze Liste im Vorrats-Rechner.`);
-  }
-  if (a.cook === "no") add("food", "a", "Get a camping stove + gas cartridges (~€30). Use it only with fresh air.", "Campingkocher + Gaskartuschen besorgen (~30 €). Nur bei guter Lüftung benutzen.");
-  // Light, info, power
-  if (a.light === "no") add("light", "a", "A headlamp per person + spare batteries. Safer than candles.", "Eine Stirnlampe pro Person + Ersatzbatterien. Sicherer als Kerzen.");
-  if (a.radio === "no") add("light", "a", "Get a crank or battery radio (~€25). Radio keeps broadcasting when phones fail.", "Kurbel- oder Batterieradio besorgen (~25 €). Radio sendet weiter, wenn Handys ausfallen.", "signal");
-  if (a.cash === "no") add("light", "a", "Keep some cash at home in small notes.", "Etwas Bargeld in kleinen Scheinen zu Hause haben.", "gate");
-  if (a.power === "none") add("light", "r", "Get a 20,000 mAh power bank (~€25) and keep it charged.", "Powerbank mit 20.000 mAh besorgen (~25 €) und geladen halten.");
-  else if (a.power === "small" || (a.power === "big" && days > 10)) add("light", "a", "For weeks, a power bank alone won't do. A foldable 20–30 W solar panel (~€60) keeps phone and lamps going.", "Für Wochen reicht eine Powerbank nicht. Ein faltbares 20–30-W-Solarpanel (~60 €) hält Handy und Lampen am Laufen.");
-  // Health
-  if (a.aid === "none") add("health", "r", "Get a first-aid kit (a car kit, DIN 13164, is a fine start) and book a first-aid course.", "Verbandkasten besorgen (Kfz-Verbandkasten DIN 13164 reicht für den Anfang) und Erste-Hilfe-Kurs buchen.");
-  else if (a.aid === "kit") add("health", "a", "Book a first-aid course: when 112 is slow, you are the help.", "Erste-Hilfe-Kurs buchen: wenn 112 nicht schnell kommt, bist du die Hilfe.");
-  // People & comms
-  if (a.neigh === "0") add("comms", "r", "Introduce yourself to three neighbours. Swap names, flat numbers and what each of you can do.", "Stell dich drei Nachbarn vor. Namen, Wohnungen und Fähigkeiten austauschen.");
-  else if (a.neigh === "1") add("comms", "a", "Get to know one or two more neighbours, and agree on a meeting place and time.", "Lerne ein, zwei Nachbarn mehr kennen und vereinbart Treffpunkt und Uhrzeit.");
-  if (a.meet === "no") add("comms", "a", "Look up your town's emergency point (Notfall-Treffpunkt / Kat-Leuchtturm) and write it on your communication card.", "Notfall-Treffpunkt / Kat-Leuchtturm deiner Gemeinde nachschlagen und auf die Kommunikationskarte schreiben.", "signal");
-  if (a.tools === "no") add("tech", "a", "Put together a small toolbox and find the main water valve, fuse box and gas valve today.", "Kleinen Werkzeugkasten zusammenstellen und heute Hauptwasserhahn, Sicherungskasten und Gashahn suchen.");
-  if (a.mind === "no") add("mind", "a", "Books, cards and board games. A daily routine helps adults and children alike.", "Bücher, Karten, Brettspiele. Ein fester Tagesablauf hilft Großen und Kleinen.");
-  const rank = { r: 0, a: 1, g: 2 }, prio = ["water", "warmth", "tech", "toilet", "food", "light", "health", "comms", "mind"];
-  return out.sort((x, y) => rank[x.s] - rank[y.s] || prio.indexOf(x.sec) - prio.indexOf(y.sec));
-}
+/* ---------- questions and the chain engine live in plan.js ---------- */
+const visible = q => !q.only || q.only(store.ans);
+function gaps(a) { return assess(a).links; }
 
 /* ---------- stock calculator (BBK checklist per person per 10 days) ---------- */
 const STOCK = [
@@ -328,27 +250,18 @@ const tile = (href, icon, title, sub, big) => `<a class="tile${big ? " big" : ""
 
 /* ---------- castle: status and nights ---------- */
 const answered = id => store.ans[id] !== undefined && store.ans[id] !== "";
+const roomQs = id => ROOM_Q[id].filter(k => visible(QBY[k]));
 function roomStatus(id, list) {
-  const g = (list || gaps(store.ans)).filter(x => x.room === id);
-  if (!ROOM_Q[id].some(answered)) return "u";
+  const qs = roomQs(id), g = (list || gaps(store.ans)).filter(x => x.room === id);
+  if (!qs.some(answered)) return "u";
   if (g.some(x => x.s === "r")) return "r";
   if (g.some(x => x.s === "a")) return "a";
-  return ROOM_Q[id].every(answered) ? "g" : "u";
+  return qs.every(answered) ? "g" : "u";
 }
-// Nights the castle holds: the shortest of water, food, warmth and toilet. Rough on purpose.
+// Nights the castle holds (plan.js): the shortest of water, food, warmth and toilet. Rough on purpose.
 function nights() {
-  const a = store.ans, people = Math.max(1, (+a.adults || 1) + (+a.kids || 0)), parts = [];
-  if (answered("water_l") || answered("treat")) {
-    const stored = Math.floor((+a.water_l || 0) / (people * 2));
-    const renew = a.treat === "filter" || (a.treat === "boil" && a.cook === "yes");
-    parts.push(["well", renew ? 28 : stored]);
-  }
-  if (answered("food")) parts.push(["kitchen", +a.food]);
-  if (answered("heat")) parts.push(["hearth", a.heat === "wood" ? 28 : a.sleep === "all" ? 28 : a.sleep === "some" ? 10 : 3]);
-  if (answered("toilet")) parts.push(["well", a.toilet === "yes" ? 28 : 7]);
-  if (!parts.length) return null;
-  parts.sort((x, y) => x[1] - y[1]);
-  return { n: Math.min(28, Math.max(0, parts[0][1])), weak: parts[0][1] < 28 ? parts[0][0] : null };
+  if (!["treat", "food", "heating", "sleep", "toilet"].some(answered)) return null;
+  return assess(store.ans).nights;
 }
 function weakestRoom(list) {
   const nt = nights(); if (nt && nt.weak) return nt.weak;
@@ -358,10 +271,11 @@ function weakestRoom(list) {
 }
 function meterHTML(list) {
   const nt = nights(), w = weakestRoom(list), ready = ROOMS.filter(r => roomStatus(r.id, list) === "g").length;
-  if (!nt) return `<div class="meter"><p style="margin:0 0 10px">${esc(t("unknown"))}</p><a class="btn primary" href="#check">${esc(t("walk"))} →</a></div>`;
-  let h = `<div class="meter" role="status"><div>${esc(t("holds"))}</div><div class="big">${nt.n} <small>${esc(t("nights"))} ${esc(t("of"))}</small></div>
+  const ver = verdictHTML();
+  if (!nt) return ver + `<div class="meter"><p style="margin:0 0 10px">${esc(t("unknown"))}</p><a class="btn primary" href="#check">${esc(t("walk"))} →</a></div>`;
+  let h = ver + `<div class="meter" role="status"><div>${esc(t("holds"))}</div><div class="big">${nt.n} <small>${esc(t("nights"))} ${esc(t("of"))}</small></div>
     <div class="moons" aria-hidden="true">${Array.from({ length: 28 }, (_, k) => `<i class="${k < nt.n ? "on" : ""}"></i>`).join("")}</div>
-    <p class="hint">${ready} / ${ROOMS.length} ${esc(t("roomsReady"))}. ${esc(t("estimate"))}</p>`;
+    <p class="hint">${ready} / ${ROOMS.length} ${esc(t("roomsReady"))}. ${esc(t("estimate"))}</p>` + chainsHTML();
   if (w) h += `<p style="margin:8px 0">${esc(t("weakest"))} <b>${ROOM[w].icon} ${esc(L(ROOM[w].t))}</b></p><a class="btn primary" href="#room/${w}">${esc(t("fixNext"))} →</a>`;
   else h += `<p>${esc(t("allReady"))}</p>`;
   return h + `</div>`;
@@ -388,6 +302,7 @@ function viewHome() {
   h += `<div class="card" id="knock"><h2>🌙 ${esc(t("tonight"))}</h2><div id="knockOut" aria-live="polite"></div><div class="actions"><button type="button" class="primary" id="knockBtn">${esc(t("tonightBtn"))}</button></div></div>`;
   h += `<h2>${esc(t("more"))}</h2><nav class="tiles" aria-label="${esc(t("more"))}">`;
   h += tile("#check", "🏰", t("walk"), t("walkSub"), true);
+  h += tile("#plan", "📜", t("planH"), t("planSub"));
   h += tile("#now", SEC.now.icon, t("now"), t("nowSub"));
   h += tile("#ready", "🧮", t("ready"), t("readySub"));
   h += tile("#card", "🗒", t("card"), t("cardSub"));
@@ -409,7 +324,7 @@ function viewRoom(id) {
   const r = ROOM[id], list = gaps(store.ans), st = roomStatus(id, list), idx = ROOMS.indexOf(r);
   let h = `<h1><span aria-hidden="true">${r.icon}</span> ${esc(L(r.t))}</h1><p class="lead">${esc(L(r.lead))}</p>`;
   h += img("room-" + id, L(r.t), "roomimg");
-  h += `<p id="rstatus"><span class="badge st-${st}">${esc(stLabel(st))}</span></p><div id="rwho">${whoHTML(r, st)}</div>`;
+  h += `<p id="rstatus"><span class="badge st-${st}">${esc(stLabel(st))}</span></p><div id="rwho">${whoHTML(r, st)}</div><div id="rneed">${needHTML(id)}</div>`;
   h += `<h2>${esc(t("checkRoom"))}</h2><form id="qform">${ROOM_Q[id].map(qField).join("")}</form>`;
   h += `<h2>${esc(t("roomGaps"))}</h2><div id="rgaps" aria-live="polite">${roomGapsHTML(id, list)}</div>`;
   h += `<h2>${esc(t("knowH"))}</h2>` + [...new Set(r.sec)].map((sid, k) => `<details class="card"${k ? "" : " open"}><summary>${SEC[sid].icon} ${esc(L(SEC[sid].t))}</summary>${SEC[sid].parts.map(p => `<h2>${esc(L(p.h))}</h2><ul>${(p.li[lang] || p.li.en).map(x => `<li>${esc(x)}</li>`).join("")}</ul>`).join("")}<p class="src">${t("sources")}: ${SEC[sid].src.map(esc).join(" · ")}</p></details>`).join("");
@@ -417,6 +332,11 @@ function viewRoom(id) {
   if (idx < ROOMS.length - 1) h += `<a class="btn primary" href="#room/${ROOMS[idx + 1].id}">${esc(t("nextRoom"))} ${ROOMS[idx + 1].icon} ${esc(L(ROOMS[idx + 1].t))} ↑</a>`;
   if (idx > 0) h += `<a class="btn" href="#room/${ROOMS[idx - 1].id}">${esc(t("prevRoom"))} ${esc(L(ROOMS[idx - 1].t))} ↓</a>`;
   return h + `</div>`;
+}
+function needHTML(id) {
+  const A = assess(store.ans);
+  return NEEDS.filter(nd => nd.room === id).map(nd => { const l = A.lv[nd.id];
+    return `<div class="card need"><div class="chain"><span class="cn">${nd.icon} ${esc(L(nd))}</span><span class="bars l${l}" aria-hidden="true"><i></i><i></i><i></i></span><span class="cl">${esc(LVL[lang][l])}</span></div><p class="hint">${esc(L(A.why[nd.id]))}</p></div>`; }).join("");
 }
 function whoHTML(r, st) {
   const ok = st === "g";
@@ -452,27 +372,46 @@ function sectionHTML(s) {
 const QBY = Object.fromEntries(Q.filter(q => q.id).map(q => [q.id, q]));
 function qField(id) {
   const q = QBY[id];
+  if (!visible(q)) return "";
   if (store.ans[q.id] === undefined && q.def !== undefined) store.ans[q.id] = String(q.def);
   const hint = q.hint ? `<p class="hint">${esc(L(q.hint))}</p>` : "";
   if (q.type === "num") return `<fieldset><legend><label for="q-${q.id}">${esc(L(q))}</label></legend>${hint}<input id="q-${q.id}" name="${q.id}" type="number" inputmode="numeric" min="${q.min}" step="1" value="${esc(store.ans[q.id] ?? "")}"></fieldset>`;
   return `<fieldset><legend>${esc(L(q))}</legend>${hint}${q.opts.map(o => `<label class="opt"><input type="radio" name="${q.id}" value="${o.v}"${store.ans[q.id] === o.v ? " checked" : ""}> ${esc(L(o))}</label>`).join("")}</fieldset>`;
 }
-function viewCheck() {
-  let h = `<h1>🏰 ${esc(t("walk"))}</h1><p class="lead">${esc(t("checkLead"))}</p><form id="qform">`;
-  h += `<div class="qroom"><img src="art/c-ylva.webp" alt="" style="width:56px;object-fit:contain;background:#f6efe2"><h2>${esc(t("householdH"))}</h2></div><p class="hint">${esc(t("householdSay"))}</p>`;
-  h += ["adults", "kids", "days"].map(qField).join("");
+function checkFormHTML() {
+  let h = `<div class="qroom"><img src="art/c-ylva.webp" alt="" style="width:56px;object-fit:contain;background:#f6efe2"><h2>${esc(t("householdH"))}</h2></div><p class="hint">${esc(t("householdSay"))}</p>`;
+  h += HOUSEHOLD_Q.map(qField).join("");
   for (const r of ROOMS) h += `<div class="qroom"><img src="art/room-${r.id}.webp" alt="" loading="lazy"><h2>${r.icon} ${esc(L(r.t))}</h2></div><p class="hint">${esc(L(r.lead))}</p>` + ROOM_Q[r.id].map(qField).join("");
-  h += `<div class="actions"><button class="primary" type="submit">${esc(t("showGaps"))}</button></div></form><section id="result" aria-live="polite"></section>`;
-  return h;
+  return h + `<div class="actions"><button class="primary" type="submit">${esc(t("showGaps"))}</button></div>`;
+}
+function viewCheck() {
+  return `<h1>🏰 ${esc(t("walk"))}</h1><p class="lead">${esc(t("checkLead"))}</p><form id="qform">${checkFormHTML()}</form><section id="result" aria-live="polite"></section>`;
+}
+function verdictHTML() {
+  const v = assess(store.ans).verdict;
+  return v ? `<div class="gap ${v.s} verdict" role="alert"><span class="tag">${esc(t("verdictH"))}</span><p>${esc(L(v))}</p></div>` : "";
+}
+function chainsHTML() {
+  const A = assess(store.ans);
+  return `<div class="chains" role="list" aria-label="${esc(t("chainsH"))}">` + NEEDS.map(nd => { const l = A.lv[nd.id];
+    return `<a class="chain" role="listitem" href="#room/${nd.room}"><span class="cn"><span aria-hidden="true">${nd.icon}</span> ${esc(L(nd))}</span><span class="bars l${l}" aria-hidden="true"><i></i><i></i><i></i></span><span class="cl">${esc(LVL[lang][l])}</span></a>`; }).join("") + `</div>`;
+}
+function todoHTML(list) {
+  store.done = store.done || {};
+  return `<ul class="todos">` + list.map(x => { const r = ROOM[x.room], d = !!store.done[x.id];
+    return `<li class="todo ${x.s}${d ? " done" : ""}"><label><input type="checkbox" data-done="${x.id}"${d ? " checked" : ""}><span><span class="tag">${t(x.s.toUpperCase())} · ${r.icon} ${esc(L(r.t))}</span><span class="tt">${esc(x[lang] || x.en)}</span></span></label></li>`; }).join("") + `</ul>`;
 }
 function resultHTML() {
   const list = gaps(store.ans), c = s => list.filter(x => x.s === s).length;
-  let h = `<h2>${esc(t("gapsH"))}</h2>` + meterHTML(list) + `<div class="sum"><span class="chip">${t("R")}: ${c("r")}</span><span class="chip">${t("A")}: ${c("a")}</span><span class="chip">${t("G")}: ${c("g")}</span></div>`;
-  if (!c("r") && !c("a")) h += `<p>${esc(t("allok"))}</p>`;
-  h += list.map(x => { const r = ROOM[x.room], v = r.who && x.s !== "g" ? VISITORS[r.who] : null;
-    return `<div class="gap ${x.s}"><span class="tag">${t(x.s.toUpperCase())} · ${r.icon} ${esc(L(r.t))}</span>${v ? `<p class="hint">${esc(L(v.n).replace(/^./, c => c.toUpperCase()))}: ${esc(L(v.risk))}</p>` : ""}<p>${esc(x[lang] || x.en)}</p><p class="noprint"><a href="#room/${r.id}">${esc(L(r.t))} →</a></p></div>`; }).join("");
-  h += `<div class="actions"><button type="button" onclick="window.print()">${esc(t("print"))}</button><a class="btn" href="#ready">${esc(t("ready"))} →</a></div>`;
+  let h = `<h2>${esc(t("planH"))}</h2><p class="lead">${esc(t("planLead"))}</p>` + meterHTML(list);
+  h += `<h2>${esc(t("todoH"))}</h2><p class="hint noprint">${esc(t("todoHint"))}</p><div class="sum"><span class="chip">${t("R")}: ${c("r")}</span><span class="chip">${t("A")}: ${c("a")}</span></div>`;
+  h += list.length ? todoHTML(list) : `<p>${esc(t("allok"))}</p>`;
+  h += `<div class="actions"><button type="button" onclick="window.print()">${esc(t("print"))}</button><a class="btn" href="#ready">${esc(t("ready"))} →</a><a class="btn" href="#power">${esc(L(SEC.power ? SEC.power.t : { en: "Power", de: "Strom" }))} →</a></div>`;
   return h;
+}
+function wireTodos(root) {
+  root.addEventListener("change", e => { const id = e.target.dataset && e.target.dataset.done; if (!id) return;
+    store.done = store.done || {}; store.done[id] = e.target.checked; save(); e.target.closest("li").classList.toggle("done", e.target.checked); });
 }
 function viewReady() {
   const a = store.ans, ad = +a.adults || 1, kd = +a.kids || 0, days = +a.days || 28;
@@ -520,6 +459,7 @@ function render() {
   else if (r === "card") { app.innerHTML = backBtn() + viewCard(); title += " · " + t("card"); wireCard(); }
   else if (r === "all") { app.innerHTML = backBtn() + viewAll(); title += " · " + t("all"); }
   else if (r.startsWith("room/") && ROOM[r.slice(5)]) { const id = r.slice(5); app.innerHTML = backBtn() + viewRoom(id) + backBtn(); title += " · " + L(ROOM[id].t); wireRoom(id); }
+  else if (r === "plan") { app.innerHTML = backBtn() + `<section id="result">${resultHTML()}</section>` + backBtn(); title += " · " + t("planH"); wireTodos(document.getElementById("result")); }
   else if (r === "crew") { app.innerHTML = backBtn() + viewCrew() + backBtn(); title += " · " + t("crew"); }
   else if (SEC[r]) { app.innerHTML = backBtn() + sectionHTML(SEC[r]) + backBtn(); title += " · " + L(SEC[r].t); }
   else { app.innerHTML = viewHome(); title += " – " + t("hero"); document.getElementById("knockBtn").onclick = knock; }
@@ -527,11 +467,20 @@ function render() {
 }
 function wireCheck() {
   const f = document.getElementById("qform"), res = document.getElementById("result");
-  const upd = e => { if (e.target.name) { store.ans[e.target.name] = e.target.value; save(); if (res.dataset.shown) res.innerHTML = resultHTML(); } };
+  const upd = e => { if (!e.target.name) return; store.ans[e.target.name] = e.target.value; save();
+    if (TRIGGERS.includes(e.target.name)) refreshForm(f, checkFormHTML, e.target);
+    if (res.dataset.shown) res.innerHTML = resultHTML(); };
+  wireTodos(res);
   f.addEventListener("change", upd); f.addEventListener("input", e => { if (e.target.type === "number") upd(e); });
   f.addEventListener("submit", e => { e.preventDefault(); res.dataset.shown = "1"; res.innerHTML = resultHTML(); res.scrollIntoView({ block: "start" }); res.querySelector("h2").setAttribute("tabindex", "-1"); res.querySelector("h2").focus({ preventScroll: true }); });
   if (store.shown) { res.dataset.shown = "1"; res.innerHTML = resultHTML(); }
   f.addEventListener("submit", () => { store.shown = true; save(); });
+}
+const TRIGGERS = ["power", "heating"];
+function refreshForm(f, html, el) {
+  const name = el.name, val = el.value, y = window.scrollY;
+  f.innerHTML = html(); window.scrollTo(0, y);
+  const again = f.querySelector(`[name="${name}"][value="${val}"]`); if (again) again.focus({ preventScroll: true });
 }
 function wireRoom(id) {
   const f = document.getElementById("qform"), r = ROOM[id];
@@ -539,7 +488,9 @@ function wireRoom(id) {
     const list = gaps(store.ans), st = roomStatus(id, list);
     document.getElementById("rstatus").innerHTML = `<span class="badge st-${st}">${esc(stLabel(st))}</span>`;
     document.getElementById("rwho").innerHTML = whoHTML(r, st);
-    document.getElementById("rgaps").innerHTML = roomGapsHTML(id, list); };
+    document.getElementById("rgaps").innerHTML = roomGapsHTML(id, list);
+    document.getElementById("rneed").innerHTML = needHTML(id);
+    if (TRIGGERS.includes(e.target.name)) refreshForm(f, () => ROOM_Q[id].map(qField).join(""), e.target); };
   f.addEventListener("change", upd); f.addEventListener("input", e => { if (e.target.type === "number") upd(e); });
   f.addEventListener("submit", e => e.preventDefault());
 }

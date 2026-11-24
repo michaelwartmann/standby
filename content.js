@@ -9,6 +9,13 @@ const SECTIONS = [
   t: { en: "What now? Hour by hour", de: "Was jetzt? Stunde für Stunde" },
   lead: { en: "The power is out. Do these things in this order.", de: "Der Strom ist weg. Tu diese Dinge in dieser Reihenfolge." },
   parts: [
+    { h: { en: "Plan for the worst case", de: "Für den Ernstfall planen" }, li: {
+      en: ["This app plans for the whole country without power for 28 winter days, with nothing coming in. Local outages are the easy version.",
+           "In real outages, people die of cold at home and of carbon monoxide from improvised heating, not of hunger.",
+           "If your home can't keep people warm, decide now where you would go, and go early, while roads and fuel still work."],
+      de: ["Diese App plant für das ganze Land 28 Wintertage ohne Strom, ohne Nachschub. Lokale Ausfälle sind die leichte Version.",
+           "Bei echten Stromausfällen sterben Menschen an Kälte zu Hause und an Kohlenmonoxid von improvisierten Heizungen, nicht an Hunger.",
+           "Wenn dein Zuhause niemanden warm halten kann, entscheide jetzt, wohin ihr geht, und geht früh, solange Straßen und Sprit noch gehen."] } },
     { h: { en: "First hour", de: "Erste Stunde" }, li: {
       en: ["Check whether it's only your home: look at the fuse box and at the neighbours' windows.",
            "Switch off the stove, oven, iron and heaters, so nothing starts burning when power comes back. Leave one lamp switched on so you notice when it does.",
@@ -114,6 +121,13 @@ const SECTIONS = [
            "Andere Räume schließen. Nachts Decken vor Fenster und Türen hängen, bei Sonne Vorhänge auf.",
            "Alle schlafen in diesem Raum. Menschen wärmen einen Raum mit.",
            "Zwei- bis dreimal am Tag kurz stoßlüften (5 Minuten), gegen Feuchtigkeit und schlechte Luft."] } },
+    { h: { en: "A tent inside the room", de: "Ein Zelt im Raum" }, li: {
+      en: ["Put a camping tent up inside the warm room and lay a blanket over it. Inside it is about 5–8 °C warmer than the room; Kyiv families did this in 2026.",
+           "Two people resting give off about 200 W: a small tent fills with that warmth.",
+           "Never a candle, stove or heater inside the tent. Open a vent and air it every morning against damp."],
+      de: ["Ein Campingzelt im warmen Raum aufstellen und eine Decke darüberlegen. Innen ist es etwa 5–8 °C wärmer als im Raum; Familien in Kyjiw haben das 2026 so gemacht.",
+           "Zwei ruhende Menschen geben etwa 200 W ab: ein kleines Zelt füllt sich mit dieser Wärme.",
+           "Nie eine Kerze, einen Kocher oder ein Heizgerät im Zelt. Eine Lüftung offen lassen und jeden Morgen gegen Feuchtigkeit lüften."] } },
     { h: { en: "Keep the body warm", de: "Den Körper warm halten" }, li: {
       en: ["Layers: wool or fleece close to the skin, then more layers. A hat and socks, indoors too.",
            "Sleep in a sleeping bag on a mat or blankets, not on the cold floor.",
@@ -136,7 +150,7 @@ const SECTIONS = [
       de: ["Kein Holzkohlegrill, Gasgrill, Generator oder Gasbackofen zum Heizen. Sie erzeugen Kohlenmonoxid (CO): unsichtbar, geruchlos, tödlich.",
            "Nur Heizgeräte, die für Innenräume zugelassen sind, mit Lüftung und CO-Melder mit Batterie."] } }
   ],
-  src: ["BBK: Stromausfall – Vorsorge und Selbsthilfe", "Berlin, Januar 2026: tagelanger Stromausfall bei rund −10 °C"]
+  src: ["BBK: Stromausfall – Vorsorge und Selbsthilfe", "Berlin, Januar 2026: tagelanger Stromausfall bei rund −10 °C", "Ukrainian Interior Ministry 2026: one small room, layers, movement", "Texty 2026: a Kyiv high-rise without heat (7–8 °C indoors at −18 °C)", "Texas DSHS 2021: 158 of 246 storm deaths from hypothermia, 19 from CO"]
 },
 {
   id: "food", icon: "🥫",
@@ -152,6 +166,17 @@ const SECTIONS = [
            "Zuerst, was kalt essbar ist: Haferflocken in Wasser oder H-Milch eingeweicht, Dosen, Knäckebrot, Nüsse, Trockenobst.",
            "Aus dem Vorrat essen und nachkaufen, damit nichts abläuft.",
            "Der Vorrats-Check rechnet die Mengen für deinen Haushalt aus."] } },
+    { h: { en: "28 days, spartan", de: "28 Tage, spartanisch" }, li: {
+      en: ["Plan for the worst case: no shop open for 4 weeks. Normal household food lasts only 3–5 days.",
+           "Per adult for 28 days, roughly: 4 kg oats, 3 kg rice or pasta, 2 kg lentils, 1 L oil, 1 kg nuts or peanut butter. That's about 47,000 kcal (around 1,600 a day) in 11 kg.",
+           "Healthy adults can eat less for 4 weeks and lose a little weight. Children eat normally. In a cold home, food is heat: don't go hungry in the cold.",
+           "Raw flour is not a no-fire food: it can carry E. coli. Bake it into flatbread. Oats soaked in water need no fire at all.",
+           "Vitamins: real scurvy takes months. Tinned fruit, juice or sauerkraut are for morale and margin."],
+      de: ["Für den Ernstfall planen: 4 Wochen kein Laden offen. Normale Haushaltsvorräte reichen nur 3–5 Tage.",
+           "Pro Erwachsenem für 28 Tage etwa: 4 kg Haferflocken, 3 kg Reis oder Nudeln, 2 kg Linsen, 1 L Öl, 1 kg Nüsse oder Erdnussbutter. Das sind etwa 47.000 kcal (rund 1.600 am Tag) in 11 kg.",
+           "Gesunde Erwachsene können 4 Wochen weniger essen und etwas abnehmen. Kinder essen normal. In einer kalten Wohnung ist Essen Wärme: nicht hungrig frieren.",
+           "Rohes Mehl ist kein Essen ohne Feuer: es kann E. coli enthalten. Zu Fladenbrot backen. Eingeweichte Haferflocken brauchen gar kein Feuer.",
+           "Vitamine: echter Skorbut braucht Monate. Obstkonserven, Saft oder Sauerkraut sind für Stimmung und Reserve."] } },
     { h: { en: "Fridge and freezer", de: "Kühlschrank und Gefriertruhe" }, li: {
       en: ["A closed fridge stays cold for about 4 hours, a full freezer about 48 hours (half full: 24).",
            "Eat the fridge first, then the freezer. In winter, a balcony or a box outside can be a fridge.",
@@ -167,7 +192,7 @@ const SECTIONS = [
            "Brennstoff sparen: Linsen und Reis vorher einweichen, Deckel drauf, ein Topf für alle, in Decken eingewickelt warm halten.",
            "Mit Nachbarn zusammen kochen: ein Kocher, ein Topf, viele Leute."] } }
   ],
-  src: ["BBK: Checkliste 10-Tage-Vorrat", "USDA: Food safety in a power outage (4 h fridge, 48 h full freezer)"]
+  src: ["BBK: Checkliste 10-Tage-Vorrat", "USDA: Food safety in a power outage (4 h fridge, 48 h full freezer)", "TAB-Brief 38 (Bundestag): household food lasts 3–5 days", "MSD Manual: vitamin C deficiency"]
 },
 {
   id: "toilet", icon: "🚽",
@@ -221,7 +246,7 @@ const SECTIONS = [
     { h: { en: "News", de: "Nachrichten" }, li: {
       en: ["Battery, crank or solar radio: public radio keeps broadcasting on emergency power. It's the most reliable news source.",
            "Warning apps and cell broadcast need the mobile network – they may not work.",
-           "Keep some cash at home in small notes: card payment and ATMs need power."],
+           "Keep cash at home in small notes, at least €100 per person (the ECB suggests €70–100 for 72 hours; 4 weeks need more). Card payment and ATMs need power, and cash can't buy what isn't there."],
       de: ["Radio mit Batterie, Kurbel oder Solar: der öffentlich-rechtliche Rundfunk sendet mit Notstrom weiter. Die verlässlichste Quelle.",
            "Warn-Apps und Cell Broadcast brauchen das Mobilfunknetz – sie können ausfallen.",
            "Etwas Bargeld in kleinen Scheinen zu Hause: Kartenzahlung und Geldautomaten brauchen Strom."] } }
@@ -282,6 +307,37 @@ const SECTIONS = [
            "Deine persönlichen Medikamente für mindestens 10 Tage."] } }
   ],
   src: ["European Resuscitation Council (ERC) Guidelines", "WHO: oral rehydration solution", "BBK: Hausapotheke", "Review by DRK first-aid trainers: pending"]
+},
+{
+  id: "power", icon: "🔌",
+  t: { en: "Power chain", de: "Stromkette" },
+  lead: { en: "Most broken links sit between the power source and the device. Close them now, while the shops are open.", de: "Die meisten fehlenden Glieder liegen zwischen Stromquelle und Gerät. Jetzt schließen, solange die Läden offen sind." },
+  parts: [
+    { h: { en: "Sources, hub, devices", de: "Quellen, Knoten, Geräte" }, li: {
+      en: ["Sources: a car with a 230 V socket (V2L, up to about 3.6 kW), the car's 12 V socket (slow), a solar panel, a generator (outdoors only), power banks.",
+           "The hub: a power station (battery + pure-sine inverter) turns all of them into 230 V and USB.",
+           "Devices: a gas boiler draws about 50–100 W, an oil burner about 100–250 W; lamps, phones and radios only a few watts. An induction plate needs about 2 kW: too much for most power stations."],
+      de: ["Quellen: ein Auto mit 230-V-Steckdose (V2L, bis etwa 3,6 kW), die 12-V-Buchse des Autos (langsam), ein Solarpanel, ein Stromerzeuger (nur draußen), Powerbanks.",
+           "Der Knoten: eine Powerstation (Akku + Sinus-Wechselrichter) macht aus allem 230 V und USB.",
+           "Geräte: eine Gastherme braucht etwa 50–100 W, ein Ölbrenner etwa 100–250 W; Lampen, Handys und Radios nur ein paar Watt. Ein Induktionsfeld braucht etwa 2 kW: zu viel für die meisten Powerstations."] } },
+    { h: { en: "Running the heating", de: "Die Heizung betreiben" }, li: {
+      en: ["Per kWh of battery: a gas boiler runs about 8–17 hours, an oil burner about 3–8 hours.",
+           "Most boilers are hard-wired. An electrician fits a plug or a changeover switch once. Never feed power into the house wiring yourself: it is forbidden and can kill people working on the grid.",
+           "Use only a pure sine wave. Some gas boilers with a flame sensor stop when the power source's neutral isn't earthed; that, too, is a job for the electrician.",
+           "Heat the house in bursts when you have power, then keep only the warm room warm."],
+      de: ["Pro kWh Akku: eine Gastherme läuft etwa 8–17 Stunden, ein Ölbrenner etwa 3–8 Stunden.",
+           "Die meisten Heizungen sind fest verdrahtet. Eine Elektrofachkraft setzt einmal einen Stecker oder Umschalter. Nie selbst Strom ins Hausnetz einspeisen: verboten und lebensgefährlich für Menschen am Netz.",
+           "Nur reiner Sinus. Manche Gasthermen mit Flammenüberwachung gehen aus, wenn der Neutralleiter der Stromquelle nicht geerdet ist; auch das macht die Elektrofachkraft.",
+           "Das Haus in Schüben heizen, wenn Strom da ist, danach nur den warmen Raum warm halten."] } },
+    { h: { en: "Traps", de: "Fallen" }, li: {
+      en: ["A normal plug-in solar system (Balkonkraftwerk) switches off when the grid is down. Only a panel plugged into a power station helps.",
+           "Generators only outdoors, far from windows. Carbon monoxide from generators on balconies and in garages kills every winter.",
+           "Car engines only outdoors, never in a garage."],
+      de: ["Ein normales Balkonkraftwerk schaltet sich bei Netzausfall ab. Nur ein Panel an der Powerstation hilft.",
+           "Stromerzeuger nur draußen, weit weg von Fenstern. Kohlenmonoxid von Generatoren auf Balkonen und in Garagen tötet jeden Winter.",
+           "Automotoren nur draußen laufen lassen, nie in der Garage."] } }
+  ],
+  src: ["solaranlage-tipps.de: Notstrom für die Heizung 2026", "TÜV-Verband via top agrar: Solaranlagen im Blackout", "BMWE: Bidirektionales Laden", "ABC News 2026: CO deaths in Ukraine"]
 },
 {
   id: "tech", icon: "🔧",
