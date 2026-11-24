@@ -170,7 +170,7 @@ const UI = {
     c_meet: "Our meeting place", c_times: "Meeting times", c_point: "Nearest emergency point (Kat-Leuchtturm)", c_chan: "Walkie-talkie channel (PMR446)",
     c_people: "Who we check on", c_contacts: "Contact people and skills", c_water: "Nearest water point / emergency well",
     c_valves: "Our fuse box, main water valve, gas valve are at…",
-    saved: "Saved on this phone.", reset: "Clear answers",
+    saved: "Saved on this phone.", reset: "Clear answers", resetSure: "Tap again: clear all answers and ticks", resetDone: "Cleared. Start again.",
     cardTitle: "Our communication card",
     open: "Open",
   },
@@ -195,16 +195,24 @@ const UI = {
     c_meet: "Unser Treffpunkt", c_times: "Uhrzeiten der Treffen", c_point: "Nächster Notfall-Treffpunkt (Kat-Leuchtturm)", c_chan: "Funkkanal (PMR446)",
     c_people: "Nach wem wir schauen", c_contacts: "Ansprechpersonen und Fähigkeiten", c_water: "Nächste Wasserstelle / Notbrunnen",
     c_valves: "Sicherungskasten, Hauptwasserhahn, Gashahn sind bei uns…",
-    saved: "Auf diesem Handy gespeichert.", reset: "Antworten löschen",
+    saved: "Auf diesem Handy gespeichert.", reset: "Antworten löschen", resetSure: "Nochmal tippen: alle Antworten und Häkchen löschen", resetDone: "Gelöscht. Neu anfangen.",
     cardTitle: "Unsere Kommunikationskarte",
     open: "Öffnen",
   }
 };
 
 /* ---------- storage (this phone only) ---------- */
+// Read one answer from a form event: checkboxes collect all ticked values; "none" excludes the rest.
+function setAns(e) {
+  const el = e.target, f = el.form, name = el.name;
+  if (el.type !== "checkbox") { store.ans[name] = el.value; return; }
+  const boxes = [...f.querySelectorAll(`input[type=checkbox][name="${name}"]`)];
+  if (el.checked) boxes.forEach(b => { if (b !== el && (el.dataset.only1 || b.dataset.only1)) b.checked = false; });
+  store.ans[name] = boxes.filter(b => b.checked).map(b => b.value);
+}
 const KEY = "standby-v1";
 const store = (() => { let d = {}; try { d = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {} return d; })();
-store.ans = store.ans || {}; store.card = store.card || {};
+store.ans = normalize(store.ans || {}); store.card = store.card || {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
 let lang = store.lang || ((navigator.languages || [navigator.language || "en"]).map(l => l.slice(0, 2).toLowerCase()).find(l => UI[l]) || "en");
 const t = k => UI[lang][k] || QUEST[lang][k] || UI.en[k] || QUEST.en[k] || k;
@@ -253,7 +261,7 @@ const backBtn = () => `<p class="back"><a class="btn" href="#">${t("back")}</a><
 const tile = (href, icon, title, sub, big) => `<a class="tile${big ? " big" : ""}" href="${href}"><span class="i" aria-hidden="true">${icon}</span><b>${esc(title)}</b><span>${esc(sub)}</span></a>`;
 
 /* ---------- castle: status and nights ---------- */
-const answered = id => store.ans[id] !== undefined && store.ans[id] !== "";
+const answered = id => store.ans[id] !== undefined && store.ans[id] !== "" && !(Array.isArray(store.ans[id]) && !store.ans[id].length);
 const roomQs = id => ROOM_Q[id].filter(k => visible(QBY[k]));
 function roomStatus(id, list) {
   const qs = roomQs(id), g = (list || gaps(store.ans)).filter(x => x.room === id);
@@ -381,13 +389,15 @@ function qField(id) {
   if (store.ans[q.id] === undefined && q.def !== undefined) store.ans[q.id] = String(q.def);
   const hint = q.hint ? `<p class="hint">${esc(L(q.hint))}</p>` : "";
   if (q.type === "num") return `<fieldset><legend><label for="q-${q.id}">${esc(L(q))}</label></legend>${hint}<input id="q-${q.id}" name="${q.id}" type="number" inputmode="numeric" min="${q.min}" step="1" value="${esc(store.ans[q.id] ?? "")}"></fieldset>`;
+  if (q.type === "multi") { const v = arr(store.ans[q.id]);
+    return `<fieldset class="multi"><legend>${esc(L(q))}</legend>${hint}${q.opts.map(o => `<label class="opt"><input type="checkbox" name="${q.id}" value="${o.v}"${o.only1 ? ' data-only1="1"' : ""}${v.includes(o.v) ? " checked" : ""}> ${esc(L(o))}</label>`).join("")}</fieldset>`; }
   return `<fieldset><legend>${esc(L(q))}</legend>${hint}${q.opts.map(o => `<label class="opt"><input type="radio" name="${q.id}" value="${o.v}"${store.ans[q.id] === o.v ? " checked" : ""}> ${esc(L(o))}</label>`).join("")}</fieldset>`;
 }
 function checkFormHTML() {
   let h = `<div class="qroom"><img src="art/c-ylva.webp" alt="" style="width:56px;object-fit:contain;background:#f6efe2"><h2>${esc(t("householdH"))}</h2></div><p class="hint">${esc(t("householdSay"))}</p>`;
   h += HOUSEHOLD_Q.map(qField).join("");
   for (const r of ROOMS) h += `<div class="qroom"><img src="art/room-${r.id}.webp" alt="" loading="lazy"><h2>${r.icon} ${esc(L(r.t))}</h2></div><p class="hint">${esc(L(r.lead))}</p>` + ROOM_Q[r.id].map(qField).join("");
-  return h + `<div class="actions"><button class="primary" type="submit">${esc(t("showGaps"))}</button></div>`;
+  return h + `<div class="actions"><button class="primary" type="submit">${esc(t("showGaps"))}</button><button type="button" id="resetBtn">🗑 ${esc(t("reset"))}</button></div>`;
 }
 function viewCheck() {
   return `<h1>🏰 ${esc(t("walk"))}</h1><p class="lead">${esc(t("checkLead"))}</p><form id="qform">${checkFormHTML()}</form><section id="result" aria-live="polite"></section>`;
@@ -432,7 +442,7 @@ function wireMove() {
   if (m("mvShare")) m("mvShare").onclick = () => navigator.share({ title: "Standby", text: exportCode() }).catch(() => {});
   m("mvLoad").onclick = () => { try { const v = m("mvIn").value.trim(); if (!v.startsWith("standby1:")) throw 0;
       const d = JSON.parse(decodeURIComponent(escape(atob(v.slice(9))))); if (!d.ans) throw 0;
-      store.ans = d.ans; store.card = d.card || {}; store.done = d.done || {}; save(); msg("loaded"); setTimeout(render, 600); } catch (e) { msg("badCode"); } };
+      store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; save(); msg("loaded"); setTimeout(render, 600); } catch (e) { msg("badCode"); } };
 }
 /* ---------- do it now: errands by shop ---------- */
 function mapsLink(q) {
@@ -503,7 +513,7 @@ function render() {
   let r = (location.hash || "#").slice(1);
   if (r.startsWith("load=")) { try { const v = decodeURIComponent(r.slice(5)); if (!v.startsWith("standby1:")) throw 0;
       const d = JSON.parse(decodeURIComponent(escape(atob(v.slice(9))))); if (!d.ans) throw 0;
-      store.ans = d.ans; store.card = d.card || {}; store.done = d.done || {}; save(); } catch (e) {}
+      store.ans = normalize(d.ans); store.card = d.card || {}; store.done = d.done || {}; save(); } catch (e) {}
     history.replaceState(null, "", location.pathname + location.search + "#errands"); r = "errands"; }
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
@@ -523,13 +533,18 @@ function render() {
 }
 function wireCheck() {
   const f = document.getElementById("qform"), res = document.getElementById("result");
-  const upd = e => { if (!e.target.name) return; store.ans[e.target.name] = e.target.value; save();
+  const upd = e => { if (!e.target.name) return; setAns(e); save();
     if (TRIGGERS.includes(e.target.name)) refreshForm(f, checkFormHTML, e.target);
     if (res.dataset.shown) res.innerHTML = resultHTML(); };
   wireTodos(res);
   f.addEventListener("change", upd); f.addEventListener("input", e => { if (e.target.type === "number") upd(e); });
   f.addEventListener("submit", e => { e.preventDefault(); res.dataset.shown = "1"; res.innerHTML = resultHTML(); res.scrollIntoView({ block: "start" }); res.querySelector("h2").setAttribute("tabindex", "-1"); res.querySelector("h2").focus({ preventScroll: true }); });
   if (store.shown) { res.dataset.shown = "1"; res.innerHTML = resultHTML(); }
+  f.addEventListener("click", e => { const b = e.target.closest("#resetBtn"); if (!b) return;
+    if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "🗑 " + t("resetSure"); return; }
+    store.ans = {}; store.card = {}; store.done = {}; store.shown = false; save();
+    f.innerHTML = checkFormHTML(); res.innerHTML = ""; delete res.dataset.shown; window.scrollTo(0, 0);
+    const m = document.createElement("p"); m.className = "hint"; m.setAttribute("role", "status"); m.textContent = t("resetDone"); f.prepend(m); });
   f.addEventListener("submit", () => { store.shown = true; save(); });
 }
 const TRIGGERS = ["power", "heating", "solar", "car"];
@@ -540,7 +555,7 @@ function refreshForm(f, html, el) {
 }
 function wireRoom(id) {
   const f = document.getElementById("qform"), r = ROOM[id];
-  const upd = e => { if (!e.target.name) return; store.ans[e.target.name] = e.target.value; save();
+  const upd = e => { if (!e.target.name) return; setAns(e); save();
     const list = gaps(store.ans), st = roomStatus(id, list);
     document.getElementById("rstatus").innerHTML = `<span class="badge st-${st}">${esc(stLabel(st))}</span>`;
     document.getElementById("rwho").innerHTML = whoHTML(r, st);

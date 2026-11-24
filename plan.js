@@ -6,6 +6,16 @@
 
 const GOAL = 28;
 const yes = { v: "yes", en: "Yes", de: "Ja" }, no = { v: "no", en: "No", de: "Nein" }, yn = [yes, no];
+const NONE = { v: "none", en: "None of these", de: "Nichts davon", only1: true };
+const TICK = { en: "Tick everything that applies.", de: "Alles ankreuzen, was zutrifft." };
+// Multi-choice answers are arrays. Older saved answers were single strings: normalise them.
+const arr = v => Array.isArray(v) ? v : (v === undefined || v === "" ? [] : [v]);
+const has = (a, k, ...vs) => arr(a[k]).some(x => vs.includes(x));
+const OLD = { safety: { both: ["co", "blanket"], one: ["blanket"], none: ["none"] }, aid: { both: ["kit", "course"], kit: ["kit"], none: ["none"] } };
+function normalize(a) {
+  for (const q of Q) if (q.type === "multi" && a[q.id] !== undefined && !Array.isArray(a[q.id])) a[q.id] = (OLD[q.id] && OLD[q.id][a[q.id]]) || arr(a[q.id]);
+  return a;
+}
 
 /* ---------- questions (ids are stable: answers are stored under them) ---------- */
 const Q = [
@@ -27,15 +37,15 @@ const Q = [
            { v: "cold", en: "Long hard frost, often below −15 °C", de: "Langer harter Frost, oft unter −15 °C" },
            { v: "hot", en: "Extreme heat, often above 40 °C", de: "Extreme Hitze, oft über 40 °C" }] },
   // hearth: warmth
-  { id: "heating", type: "choice", en: "How is your home heated?", de: "Wie wird geheizt?",
-    hint: { en: "Almost every heating system needs electricity for pumps, ignition and controls.", de: "Fast jede Heizung braucht Strom für Pumpe, Zündung und Steuerung." },
+  { id: "heating", type: "multi", en: "How can your home be heated? Tick every heat source you have.", de: "Womit kann dein Zuhause geheizt werden? Kreuze jede Wärmequelle an, die du hast.",
+    hint: { en: "Almost every heating system needs electricity for pumps, ignition and controls. A stove or fireplace next to the boiler counts too.", de: "Fast jede Heizung braucht Strom für Pumpe, Zündung und Steuerung. Ein Ofen oder Kamin neben der Heizung zählt auch." },
     opts: [{ v: "gas_own", en: "Own gas boiler (in the house or flat)", de: "Eigene Gastherme (im Haus oder in der Wohnung)" },
            { v: "oil", en: "Oil boiler", de: "Ölheizung" },
            { v: "central", en: "Central heating of the building, or district heating", de: "Zentralheizung des Gebäudes oder Fernwärme" },
            { v: "heatpump", en: "Heat pump", de: "Wärmepumpe" },
            { v: "electric", en: "Electric heaters", de: "Elektroheizung" },
            { v: "wood", en: "Wood or tiled stove that runs without power", de: "Holz- oder Kachelofen, der ohne Strom läuft" }] },
-  { id: "wood", type: "choice", en: "Dry wood for 4 weeks of heating?", de: "Trockenes Holz für 4 Wochen Heizen?", only: a => a.heating === "wood", opts: yn },
+  { id: "wood", type: "choice", en: "Dry wood for 4 weeks of heating?", de: "Trockenes Holz für 4 Wochen Heizen?", only: a => has(a, "heating", "wood"), opts: yn },
   { id: "warmroom", type: "choice", en: "Do you know which room will be your warm room?", de: "Weißt du, welcher Raum euer warmer Raum wird?",
     hint: { en: "The smallest room with the fewest outside walls. Everyone sleeps there; the window gets covered.", de: "Der kleinste Raum mit den wenigsten Außenwänden. Alle schlafen dort; das Fenster wird abgedeckt." }, opts: yn },
   { id: "sleep", type: "choice", en: "A warm sleeping bag (comfort about 0 °C) for everyone?", de: "Ein warmer Schlafsack (Komfort etwa 0 °C) für alle?",
@@ -51,9 +61,9 @@ const Q = [
     only: a => a.power && a.power !== "none", opts: [yes, no, { v: "unknown", en: "Don't know", de: "Weiß nicht" }] },
   { id: "plug", type: "choice", en: "Can your boiler be plugged into a power station?", de: "Lässt sich deine Heizung an eine Powerstation anstecken?",
     hint: { en: "Most boilers are hard-wired. An electrician fits a plug or a changeover switch once. Never feed power into the house wiring yourself.", de: "Die meisten Heizungen sind fest verdrahtet. Eine Elektrofachkraft setzt einmal einen Stecker oder Umschalter. Nie selbst Strom ins Hausnetz einspeisen." },
-    only: a => a.heating === "gas_own" || a.heating === "oil", opts: [{ v: "yes", en: "Yes, it has a plug", de: "Ja, sie hat einen Stecker" }, { v: "no", en: "No, hard-wired", de: "Nein, fest verdrahtet" }, { v: "unknown", en: "Don't know", de: "Weiß nicht" }] },
-  { id: "car", type: "choice", en: "A car?", de: "Ein Auto?",
-    opts: [{ v: "none", en: "No car", de: "Kein Auto" }, { v: "ice", en: "Petrol or diesel", de: "Benzin oder Diesel" }, { v: "ev", en: "Electric, without a 230 V socket", de: "Elektro, ohne 230-V-Steckdose" }, { v: "v2l", en: "Electric with a 230 V socket (V2L) or feeding the house (V2H)", de: "Elektro mit 230-V-Steckdose (V2L) oder Hauseinspeisung (V2H)" }] },
+    only: a => has(a, "heating", "gas_own", "oil"), opts: [{ v: "yes", en: "Yes, it has a plug", de: "Ja, sie hat einen Stecker" }, { v: "no", en: "No, hard-wired", de: "Nein, fest verdrahtet" }, { v: "unknown", en: "Don't know", de: "Weiß nicht" }] },
+  { id: "car", type: "multi", en: "Cars in the household (tick all)", de: "Autos im Haushalt (alle ankreuzen)",
+    opts: [{ v: "none", en: "No car", de: "Kein Auto", only1: true }, { v: "ice", en: "Petrol or diesel", de: "Benzin oder Diesel" }, { v: "ev", en: "Electric, without a 230 V socket", de: "Elektro, ohne 230-V-Steckdose" }, { v: "v2l", en: "Electric with a 230 V socket (V2L) or feeding the house (V2H)", de: "Elektro mit 230-V-Steckdose (V2L) oder Hauseinspeisung (V2H)" }] },
   { id: "solar", type: "choice", en: "A solar panel you can plug straight into the power station?", de: "Ein Solarpanel, das direkt an die Powerstation passt?",
     hint: { en: "A normal plug-in solar system (Balkonkraftwerk) switches off when the grid is down. It only helps through a power station.", de: "Ein normales Balkonkraftwerk schaltet sich bei Netzausfall ab. Es hilft nur über eine Powerstation." }, opts: yn },
   { id: "generator", type: "choice", en: "A generator (used outdoors only)?", de: "Ein Stromerzeuger (nur draußen betrieben)?", opts: yn },
@@ -67,8 +77,8 @@ const Q = [
   // well: water and toilet
   { id: "water_l", type: "num", def: 0, min: 0, en: "Drinking water stored at home (litres, all together)", de: "Trinkwasser zu Hause (Liter, alles zusammen)",
     hint: { en: "2 litres per person per day. Tap water in clean food-grade canisters works; renew it about every 6 months.", de: "2 Liter pro Person und Tag. Leitungswasser in sauberen, lebensmittelechten Kanistern geht; etwa alle 6 Monate erneuern." } },
-  { id: "treat", type: "choice", en: "Can you make water safe to drink?", de: "Kannst du Wasser trinkbar machen?",
-    opts: [{ v: "filter", en: "Yes: water filter or disinfection tablets", de: "Ja: Wasserfilter oder Entkeimungstabletten" }, { v: "boil", en: "Only by boiling", de: "Nur abkochen" }, { v: "none", en: "No", de: "Nein" }] },
+  { id: "treat", type: "multi", en: "How can you make water safe to drink?", de: "Wie kannst du Wasser trinkbar machen?", hint: TICK,
+    opts: [{ v: "filter", en: "Water filter", de: "Wasserfilter" }, { v: "tabs", en: "Disinfection tablets", de: "Entkeimungstabletten" }, { v: "boil", en: "Boiling", de: "Abkochen" }, NONE] },
   { id: "canisters", type: "choice", en: "Empty canisters to fetch water from an emergency well?", de: "Leere Kanister, um Wasser vom Notbrunnen zu holen?", opts: yn },
   { id: "toilet", type: "choice", en: "Emergency toilet ready (bucket, strong bags, cat litter or sawdust)?", de: "Nottoilette bereit (Eimer, feste Beutel, Katzenstreu oder Sägespäne)?", opts: yn },
   { id: "hygiene", type: "choice", en: "Soap, wet wipes and disinfectant for 4 weeks?", de: "Seife, Feuchttücher und Desinfektion für 4 Wochen?", opts: yn },
@@ -76,18 +86,18 @@ const Q = [
   { id: "food", type: "choice", en: "Food that keeps without a fridge lasts your household…", de: "Essen, das ohne Kühlschrank hält, reicht deinem Haushalt…",
     hint: { en: "Count at normal eating. The design case is no shop open for 28 days.", de: "Bei normalem Essen gerechnet. Der Ernstfall: 28 Tage kein Laden offen." },
     opts: [{ v: "3", en: "up to 3 days", de: "bis 3 Tage" }, { v: "10", en: "about 10 days", de: "etwa 10 Tage" }, { v: "20", en: "about 3 weeks", de: "etwa 3 Wochen" }, { v: "28", en: "4 weeks or more", de: "4 Wochen oder mehr" }] },
-  { id: "cook", type: "choice", en: "How can you cook without electricity?", de: "Wie kannst du ohne Strom kochen?",
-    opts: [{ v: "none", en: "I can't", de: "Gar nicht" }, { v: "gas", en: "Gas hob (mains gas)", de: "Gasherd (Gasleitung)" }, { v: "camping", en: "Camping stove with fuel for 4 weeks", de: "Campingkocher mit Brennstoff für 4 Wochen" }, { v: "wood", en: "Rocket stove, wood stove or fireplace", de: "Raketenofen, Holzofen oder Feuerstelle" }] },
+  { id: "cook", type: "multi", en: "How can you cook without electricity?", de: "Wie kannst du ohne Strom kochen?", hint: TICK,
+    opts: [{ v: "gas", en: "Gas hob (mains gas)", de: "Gasherd (Gasleitung)" }, { v: "camping", en: "Camping stove with fuel for 4 weeks", de: "Campingkocher mit Brennstoff für 4 Wochen" }, { v: "wood", en: "Rocket stove, wood stove or fireplace", de: "Raketenofen, Holzofen oder Feuerstelle" }, { v: "none", en: "I can't", de: "Gar nicht", only1: true }] },
   { id: "vit", type: "choice", en: "Something with vitamins that keeps (tinned fruit, juice, sauerkraut)?", de: "Etwas mit Vitaminen, das hält (Obstkonserven, Saft, Sauerkraut)?", opts: yn },
   // herb room: health
-  { id: "aid", type: "choice", en: "First aid", de: "Erste Hilfe",
-    opts: [{ v: "both", en: "Kit at home + course in the last 5 years", de: "Verbandkasten + Kurs in den letzten 5 Jahren" }, { v: "kit", en: "Kit only", de: "Nur Verbandkasten" }, { v: "none", en: "Neither", de: "Keins" }] },
+  { id: "aid", type: "multi", en: "First aid", de: "Erste Hilfe", hint: TICK,
+    opts: [{ v: "kit", en: "First-aid kit at home", de: "Verbandkasten zu Hause" }, { v: "course", en: "First-aid course in the last 5 years", de: "Erste-Hilfe-Kurs in den letzten 5 Jahren" }, NONE] },
   { id: "meds", type: "choice", en: "Regular medicines for at least 4 weeks?", de: "Regelmäßige Medikamente für mindestens 4 Wochen?",
     opts: [yes, no, { v: "na", en: "Nobody needs any", de: "Niemand braucht welche" }] },
   // gatehouse: safety and cash
-  { id: "safety", type: "choice", en: "Battery CO alarm and fire blanket or extinguisher?", de: "CO-Melder mit Batterie und Löschdecke oder Feuerlöscher?",
+  { id: "safety", type: "multi", en: "Safety equipment at home (tick all)", de: "Sicherheitsausrüstung zu Hause (alle ankreuzen)",
     hint: { en: "In real outages, people die of carbon monoxide from grills, generators and gas stoves used for heating.", de: "Bei echten Stromausfällen sterben Menschen an Kohlenmonoxid von Grills, Generatoren und Gasherden zum Heizen." },
-    opts: [{ v: "both", en: "Both", de: "Beides" }, { v: "one", en: "One of them", de: "Eins davon" }, { v: "none", en: "Neither", de: "Keins" }] },
+    opts: [{ v: "co", en: "Battery CO alarm", de: "CO-Melder mit Batterie" }, { v: "smoke", en: "Smoke alarms", de: "Rauchmelder" }, { v: "blanket", en: "Fire blanket", de: "Löschdecke" }, { v: "ext", en: "Fire extinguisher", de: "Feuerlöscher" }, NONE] },
   { id: "cash", type: "choice", en: "Cash at home in small notes?", de: "Bargeld zu Hause in kleinen Scheinen?",
     opts: [{ v: "none", en: "None", de: "Keins" }, { v: "some", en: "Less than €100 per person", de: "Weniger als 100 € pro Person" }, { v: "enough", en: "€100 or more per person", de: "100 € oder mehr pro Person" }] },
   // great hall: people
@@ -110,14 +120,15 @@ const NEEDS = [
 ];
 
 function assess(a) {
+  a = normalize({ ...a });
   const n = k => +a[k] || 0, adults = Math.max(1, n("adults")), kids = n("kids"), P = adults + kids;
   const links = [], add = (id, room, need, s, en, de) => links.push({ id, room, need, s, en, de });
   const lv = {}, why = {};
-  const cookOK = ["gas", "camping", "wood"].includes(a.cook);
-  const ev = a.car === "ev" || a.car === "v2l";
+  const cookOK = has(a, "cook", "gas", "camping", "wood");
+  const ev = has(a, "car", "ev", "v2l"), v2l = has(a, "car", "v2l"), ice = has(a, "car", "ice");
   const station = (a.power === "mid" || a.power === "big") && a.sine === "yes";
-  const powerSrc = station || a.car === "v2l" || a.generator === "yes";
-  const recharge = a.solar === "yes" || ev || a.generator === "yes" || a.car === "ice";
+  const powerSrc = station || v2l || a.generator === "yes";
+  const recharge = a.solar === "yes" || ev || a.generator === "yes" || ice;
   const rent = a.tenure === "rent";
 
   /* warmth */
@@ -132,36 +143,41 @@ function assess(a) {
   if (!room) add("w-room", "hearth", "warmth", "a",
     "Choose your warm room today: the smallest room with the fewest outside walls. Have a blanket ready to cover its window.",
     "Heute den warmen Raum festlegen: den kleinsten Raum mit den wenigsten Außenwänden. Eine Decke fürs Fenster bereitlegen.");
-  let heat = 1, heatWhy = { en: "Your heating stops without power. Warmth comes from people, layers and the warm room.", de: "Deine Heizung steht ohne Strom. Wärme kommt von Menschen, Schichten und dem warmen Raum." };
-  if (a.heating === "wood") {
-    heat = a.wood === "yes" ? 3 : 2; heatWhy = { en: "Your stove runs without power.", de: "Dein Ofen läuft ohne Strom." };
-    if (a.wood !== "yes") add("w-wood", "hearth", "warmth", "a", "Store dry wood for 4 weeks. Your home can become the street's warm room.", "Trockenes Holz für 4 Wochen lagern. Dein Zuhause kann der warme Raum der Straße werden.");
-  } else if (a.heating === "gas_own" || a.heating === "oil") {
-    const plug = a.plug === "yes", w = a.heating === "oil" ? "100–250 W, 3–8 h" : "50–100 W, 8–17 h";
+  // every heat source the household ticked is tried; the best one counts
+  const H = arr(a.heating); let heat = 1, heatWhy = { en: "Your heating stops without power. Warmth comes from people, layers and the warm room.", de: "Deine Heizung steht ohne Strom. Wärme kommt von Menschen, Schichten und dem warmen Raum." }, heatLinks = [];
+  const tryPath = (h, w, l) => { if (h > heat) { heat = h; heatWhy = w; heatLinks = l; } };
+  if (H.includes("gas_own") || H.includes("oil")) {
+    const L = [], mk = (id, room, need, s, en, de) => L.push({ id, room, need, s, en, de });
+    const plug = a.plug === "yes", w = H.includes("oil") ? "100–250 W, 3–8 h" : "50–100 W, 8–17 h";
     if (plug && powerSrc) {
-      const strong = a.power === "big" || a.car === "v2l" || a.generator === "yes";
-      heat = recharge || strong ? 3 : 2;
-      heatWhy = { en: `Your boiler can run on battery power (about ${w} per kWh). Heat the house in bursts, keep the warm room warm.`, de: `Deine Heizung kann am Akku laufen (etwa ${w} pro kWh). Das Haus in Schüben heizen, den warmen Raum warm halten.` };
-      if (!recharge && !strong) add("p-recharge", "workshop", "warmth", "a", "Add a way to recharge the power station: a foldable solar panel (~€100–200) or the car.", "Eine Möglichkeit zum Nachladen: ein faltbares Solarpanel (~100–200 €) oder das Auto.");
+      const strong = a.power === "big" || v2l || a.generator === "yes";
+      if (!recharge && !strong) mk("p-recharge", "workshop", "warmth", "a", "Add a way to recharge the power station: a foldable solar panel (~€100–200) or the car.", "Eine Möglichkeit zum Nachladen: ein faltbares Solarpanel (~100–200 €) oder das Auto.");
+      tryPath(recharge || strong ? 3 : 2, { en: `Your boiler can run on battery power (about ${w} per kWh). Heat the house in bursts, keep the warm room warm.`, de: `Deine Heizung kann am Akku laufen (etwa ${w} pro kWh). Das Haus in Schüben heizen, den warmen Raum warm halten.` }, L);
     } else {
-      heatWhy = { en: `Your boiler needs 230 V (about ${w} per kWh of battery). One link is missing, so it stays cold.`, de: `Deine Heizung braucht 230 V (etwa ${w} pro kWh Akku). Ein Glied fehlt, also bleibt sie kalt.` };
-      if (!plug) add("p-plug", "workshop", "warmth", "a",
+      if (!plug) mk("p-plug", "workshop", "warmth", "a",
         rent ? "Ask your landlord to have an electrician fit a plug or changeover switch on the boiler. One visit; it is the most common missing link."
              : "Have an electrician fit a plug or changeover switch on the boiler. One visit; it is the most common missing link.",
         rent ? "Den Vermieter bitten, eine Elektrofachkraft einen Stecker oder Umschalter an der Heizung setzen zu lassen. Ein Termin; das ist das häufigste fehlende Glied."
              : "Eine Elektrofachkraft einen Stecker oder Umschalter an der Heizung setzen lassen. Ein Termin; das ist das häufigste fehlende Glied.");
-      if (!powerSrc) add("p-station", "workshop", "warmth", "a",
-        a.car === "ev" ? "A power station of about 1 kWh with pure-sine 230 V (~€400–700), charged from the car's 12 V socket or a solar panel, runs the boiler a few hours a day."
-                       : "A power station of about 1 kWh with pure-sine 230 V (~€400–700) runs the boiler a few hours a day; with a solar panel it recharges.",
-        a.car === "ev" ? "Eine Powerstation mit etwa 1 kWh und reinem Sinus (~400–700 €), geladen über die 12-V-Buchse des Autos oder ein Solarpanel, betreibt die Heizung ein paar Stunden am Tag."
-                       : "Eine Powerstation mit etwa 1 kWh und reinem Sinus (~400–700 €) betreibt die Heizung ein paar Stunden am Tag; mit Solarpanel lädt sie nach.");
+      if (!powerSrc) mk("p-station", "workshop", "warmth", "a",
+        ev ? "A power station of about 1 kWh with pure-sine 230 V (~€400–700), charged from the car's 12 V socket or a solar panel, runs the boiler a few hours a day."
+           : "A power station of about 1 kWh with pure-sine 230 V (~€400–700) runs the boiler a few hours a day; with a solar panel it recharges.",
+        ev ? "Eine Powerstation mit etwa 1 kWh und reinem Sinus (~400–700 €), geladen über die 12-V-Buchse des Autos oder ein Solarpanel, betreibt die Heizung ein paar Stunden am Tag."
+           : "Eine Powerstation mit etwa 1 kWh und reinem Sinus (~400–700 €) betreibt die Heizung ein paar Stunden am Tag; mit Solarpanel lädt sie nach.");
+      heatLinks = L; heatWhy = { en: `Your boiler needs 230 V (about ${w} per kWh of battery). One link is missing, so it stays cold.`, de: `Deine Heizung braucht 230 V (etwa ${w} pro kWh Akku). Ein Glied fehlt, also bleibt sie kalt.` };
     }
-  } else if (a.heating === "central") heatWhy = { en: "Central and district heating depend on pumps you can't reach. Plan with the warm room.", de: "Zentral- und Fernwärme hängen an Pumpen, an die du nicht herankommst. Plane mit dem warmen Raum." };
-  else if (a.heating === "heatpump" || a.heating === "electric") heatWhy = { en: "Your heating needs several kW, far more than a power station gives. Plan with the warm room.", de: "Deine Heizung braucht mehrere kW, weit mehr als eine Powerstation liefert. Plane mit dem warmen Raum." };
+  } else if (H.includes("central")) heatWhy = { en: "Central and district heating depend on pumps you can't reach. Plan with the warm room.", de: "Zentral- und Fernwärme hängen an Pumpen, an die du nicht herankommst. Plane mit dem warmen Raum." };
+  else if (H.includes("heatpump") || H.includes("electric")) heatWhy = { en: "Your heating needs several kW, far more than a power station gives. Plan with the warm room.", de: "Deine Heizung braucht mehrere kW, weit mehr als eine Powerstation liefert. Plane mit dem warmen Raum." };
+  if (H.includes("wood")) {
+    const L = a.wood === "yes" ? [] : [{ id: "w-wood", room: "hearth", need: "warmth", s: "a", en: "Store dry wood for 4 weeks. Your home can become the street's warm room.", de: "Trockenes Holz für 4 Wochen lagern. Dein Zuhause kann der warme Raum der Straße werden." }];
+    const h = a.wood === "yes" ? 3 : 2;
+    if (h > heat || (h === heat && heatLinks.length)) { heat = h; heatWhy = { en: "Your stove runs without power.", de: "Dein Ofen läuft ohne Strom." }; heatLinks = L; }
+  }
+  links.push(...heatLinks);
   lv.warmth = heat >= 2 ? (base ? heat : heat - 1) : (base ? 1 : 0); why.warmth = heatWhy;
 
   /* water */
-  const d = Math.floor(n("water_l") / (P * 2)), treatOK = a.treat === "filter" || (a.treat === "boil" && cookOK);
+  const d = Math.floor(n("water_l") / (P * 2)), treatOK = has(a, "treat", "filter", "tabs") || (has(a, "treat", "boil") && cookOK);
   lv.water = d >= GOAL ? 3 : treatOK && d >= 14 && a.canisters === "yes" ? 2 : treatOK && d >= 7 ? 1 : 0;
   why.water = { en: `Stored water lasts about ${d} days for ${P}.` + (treatOK ? " You can make other water safe." : ""), de: `Der Wasservorrat reicht für ${P} etwa ${d} Tage.` + (treatOK ? " Anderes Wasser kannst du trinkbar machen." : "") };
   if (!treatOK) add("h-filter", "well", "water", "r", "Get a water filter (hollow fibre, ~€25) or disinfection tablets. When the stored water is gone, it makes rain or well water drinkable.", "Einen Wasserfilter (Hohlfaser, ~25 €) oder Entkeimungstabletten besorgen. Wenn der Vorrat leer ist, macht er Regen- oder Brunnenwasser trinkbar.");
@@ -187,7 +203,7 @@ function assess(a) {
   if (a.vit !== "yes") add("f-vit", "kitchen", "food", "a", "Tinned fruit, juice or sauerkraut: not needed to survive 4 weeks, but good for morale and a margin.", "Obstkonserven, Saft oder Sauerkraut: zum Überleben von 4 Wochen nicht nötig, aber gut für Stimmung und Reserve.");
 
   /* light and information */
-  const phone = a.banks === "yes" || (a.power && a.power !== "none") || a.car === "v2l";
+  const phone = a.banks === "yes" || (a.power && a.power !== "none") || v2l;
   lv.light = !(a.light === "yes" && a.radio === "yes") ? 0 : phone && recharge ? 3 : phone ? 2 : 1;
   why.light = { en: "Light for safety, the radio for news when phones fail.", de: "Licht für die Sicherheit, das Radio für Nachrichten, wenn Handys ausfallen." };
   if (a.light !== "yes") add("l-lamp", "lantern", "light", "r", "A headlamp per person with spare batteries. Safer than candles.", "Eine Stirnlampe pro Person mit Ersatzbatterien. Sicherer als Kerzen.");
@@ -196,11 +212,11 @@ function assess(a) {
   else if (!recharge) add("l-solar", "lantern", "light", "a", "A small foldable solar panel to recharge power banks and lamps for weeks.", "Ein kleines faltbares Solarpanel, um Powerbanks und Lampen wochenlang nachzuladen.");
 
   /* safety, health, people, spirits, signal */
-  if (a.safety === "none") add("g-co", "gate", "safety", "r", "Get a battery CO alarm (~€25) for the warm room and a fire blanket (~€15) for the kitchen. Never heat with grills, gas stoves or generators indoors.", "Einen CO-Melder mit Batterie (~25 €) für den warmen Raum und eine Löschdecke (~15 €) für die Küche besorgen. Nie mit Grill, Gasherd oder Generator drinnen heizen.");
-  else if (a.safety === "one") add("g-co2", "gate", "safety", "a", "Complete the pair: a battery CO alarm in the warm room and a fire blanket or 6 L foam extinguisher in the kitchen.", "Das Paar vervollständigen: CO-Melder im warmen Raum und Löschdecke oder 6-L-Schaumlöscher in der Küche.");
+  if (!has(a, "safety", "co")) add("g-co", "gate", "safety", "r", "Get a battery CO alarm (EN 50291, ~€25) for the warm room. Never heat with grills, gas stoves or generators indoors.", "Einen CO-Melder mit Batterie (EN 50291, ~25 €) für den warmen Raum besorgen. Nie mit Grill, Gasherd oder Generator drinnen heizen.");
+  if (!has(a, "safety", "blanket", "ext")) add("g-fire", "gate", "safety", "a", "A fire blanket (~€15) or 6 L foam extinguisher in the kitchen: candles and stoves indoors raise the fire risk.", "Eine Löschdecke (~15 €) oder ein 6-L-Schaumlöscher in der Küche: Kerzen und Öfen drinnen erhöhen das Brandrisiko.");
   if (a.cash !== "enough") add("g-cash", "gate", "safety", "a", "Cash in small notes: at least €100 per person. Card payments and ATMs stop with the power; and cash can't buy what isn't there.", "Bargeld in kleinen Scheinen: mindestens 100 € pro Person. Karten und Geldautomaten fallen mit dem Strom aus; und Bargeld kauft nicht, was es nicht gibt.");
-  if (a.aid === "none") add("m-kit", "herbs", "health", "r", "A first-aid kit (a car kit is a good start) and a first-aid course: after the first week, doctors are hard to reach.", "Verbandkasten (ein Kfz-Verbandkasten reicht für den Anfang) und Erste-Hilfe-Kurs: nach der ersten Woche sind Ärzte kaum erreichbar.");
-  else if (a.aid === "kit") add("m-course", "herbs", "health", "a", "Book a first-aid course. When help doesn't come, you are the help.", "Einen Erste-Hilfe-Kurs buchen. Wenn keine Hilfe kommt, bist du die Hilfe.");
+  if (!has(a, "aid", "kit")) add("m-kit", "herbs", "health", "r", "A first-aid kit (a car kit is a good start) and a first-aid course: after the first week, doctors are hard to reach.", "Verbandkasten (ein Kfz-Verbandkasten reicht für den Anfang) und Erste-Hilfe-Kurs: nach der ersten Woche sind Ärzte kaum erreichbar.");
+  else if (!has(a, "aid", "course")) add("m-course", "herbs", "health", "a", "Book a first-aid course. When help doesn't come, you are the help.", "Einen Erste-Hilfe-Kurs buchen. Wenn keine Hilfe kommt, bist du die Hilfe.");
   if (a.meds === "no") add("m-meds", "herbs", "health", "r", "Ask your doctor how to keep a 4-week reserve of the medicines you need.", "Mit der Ärztin oder dem Arzt klären, wie du eine 4-Wochen-Reserve deiner Medikamente anlegst.");
   if (a.neigh === "0") add("p-neigh", "hall", "people", "r", "Introduce yourself to three neighbours: names, flats, what each of you can do.", "Stell dich drei Nachbarn vor: Namen, Wohnungen, wer was kann.");
   else if (a.neigh === "1") add("p-neigh2", "hall", "people", "a", "Get to know one or two more neighbours and agree on a meeting place and time.", "Ein, zwei Nachbarn mehr kennenlernen und Treffpunkt und Uhrzeit vereinbaren.");
@@ -230,32 +246,33 @@ function assess(a) {
 Q.push(
   { id: "station_wh", type: "num", min: 0, only: a => a.power && a.power !== "none", en: "Power station capacity in Wh (on the label)", de: "Kapazität der Powerstation in Wh (steht auf dem Gerät)" },
   { id: "solar_w", type: "num", min: 0, only: a => a.solar === "yes", en: "Solar panel power in watts", de: "Leistung des Solarpanels in Watt" },
-  { id: "ev_kwh", type: "num", min: 0, only: a => a.car === "ev" || a.car === "v2l", en: "Car battery in kWh", de: "Autobatterie in kWh" }
+  { id: "ev_kwh", type: "num", min: 0, only: a => has(a, "car", "ev", "v2l"), en: "Car battery in kWh", de: "Autobatterie in kWh" }
 );
 
 /* ---------- what the system can and can't do ---------- */
 const fmtN = v => Math.round(v).toLocaleString(typeof lang === "string" ? lang : "en");
 function caps(a) {
+  a = normalize({ ...a });
   const out = [], ok = (y, en, de) => out.push({ y, en, de });
   const n = k => +a[k] || 0, P = Math.max(1, n("adults")) + n("kids");
   const sizeWh = { small: 300, mid: 1000, big: 2000 }[a.power] || 0, wh = n("station_wh") || sizeWh;
-  const sine = a.sine === "yes", ev = a.car === "ev" || a.car === "v2l", evk = n("ev_kwh");
+  const sine = a.sine === "yes", ev = has(a, "car", "ev", "v2l"), v2l = has(a, "car", "v2l"), evk = n("ev_kwh");
   const solarDay = a.solar === "yes" ? (n("solar_w") || 100) * 0.8 : 0; // winter in Central Europe: roughly 0.5–1 kWh per kWp a day
-  const carDay = ev ? 1500 : a.car === "ice" ? 1000 : 0;               // 12 V socket, about 100 W for many hours
-  const boilW = a.heating === "oil" ? 175 : a.heating === "gas_own" ? 75 : 0;
+  const carDay = ev ? 1500 : has(a, "car", "ice") ? 1000 : 0;               // 12 V socket, about 100 W for many hours
+  const boilW = has(a, "heating", "oil") ? 175 : has(a, "heating", "gas_own") ? 75 : 0;
   // heating
-  if (a.heating === "wood") ok(a.wood === "yes", "Heating: the wood stove heats without power" + (a.wood === "yes" ? "." : ", but the wood for 4 weeks is missing."), "Heizen: der Holzofen heizt ohne Strom" + (a.wood === "yes" ? "." : ", aber das Holz für 4 Wochen fehlt."));
-  else if (boilW) {
+  if (has(a, "heating", "wood")) ok(a.wood === "yes", "Heating: the wood stove heats without power" + (a.wood === "yes" ? "." : ", but the wood for 4 weeks is missing."), "Heizen: der Holzofen heizt ohne Strom" + (a.wood === "yes" ? "." : ", aber das Holz für 4 Wochen fehlt."));
+  if (boilW) {
     const missing = [];
     if (a.plug !== "yes") missing.push({ en: "a plug on the boiler", de: "ein Stecker an der Heizung" });
-    if (!((wh && sine) || a.car === "v2l" || a.generator === "yes")) missing.push({ en: "a power source with pure-sine 230 V", de: "eine Stromquelle mit reinem Sinus 230 V" });
+    if (!((wh && sine) || v2l || a.generator === "yes")) missing.push({ en: "a power source with pure-sine 230 V", de: "eine Stromquelle mit reinem Sinus 230 V" });
     if (missing.length) ok(false, `Heating: the boiler can't run. Missing: ${missing.map(m => m.en).join(" and ")}.`, `Heizen: die Heizung kann nicht laufen. Es fehlt: ${missing.map(m => m.de).join(" und ")}.`);
     else {
       const per = wh ? Math.round(wh * 0.85 / boilW) : 0, daily = solarDay + carDay, dh = Math.round(daily * 0.85 / boilW);
-      ok(true, `Heating: the boiler runs about ${per} h per charge of the power station` + (daily ? `, and recharging (${[solarDay ? "solar" : "", carDay ? "car" : ""].filter(Boolean).join(" + ")}) adds about ${dh} h a day.` : ".") + (a.car === "v2l" ? " The car's 230 V socket can also run it directly." : ""),
-             `Heizen: die Heizung läuft etwa ${per} h pro Akkuladung` + (daily ? `, und Nachladen (${[solarDay ? "Solar" : "", carDay ? "Auto" : ""].filter(Boolean).join(" + ")}) bringt etwa ${dh} h pro Tag.` : ".") + (a.car === "v2l" ? " Die 230-V-Steckdose des Autos kann sie auch direkt betreiben." : ""));
+      ok(true, `Heating: the boiler runs about ${per} h per charge of the power station` + (daily ? `, and recharging (${[solarDay ? "solar" : "", carDay ? "car" : ""].filter(Boolean).join(" + ")}) adds about ${dh} h a day.` : ".") + (v2l ? " The car's 230 V socket can also run it directly." : ""),
+             `Heizen: die Heizung läuft etwa ${per} h pro Akkuladung` + (daily ? `, und Nachladen (${[solarDay ? "Solar" : "", carDay ? "Auto" : ""].filter(Boolean).join(" + ")}) bringt etwa ${dh} h pro Tag.` : ".") + (v2l ? " Die 230-V-Steckdose des Autos kann sie auch direkt betreiben." : ""));
     }
-  } else ok(false, "Heating: it can't run without grid power. Warmth comes from the warm room, layers and the tent.", "Heizen: ohne Netzstrom läuft sie nicht. Wärme kommt vom warmen Raum, Schichten und dem Zelt.");
+  } else if (!has(a, "heating", "wood")) ok(false, "Heating: it can't run without grid power. Warmth comes from the warm room, layers and the tent.", "Heizen: ohne Netzstrom läuft sie nicht. Wärme kommt vom warmen Raum, Schichten und dem Zelt.");
   ok(a.sleep === "all" && (a.tent === "yes" || a.blankets === "yes"), a.sleep === "all" ? `Sleeping warm: sleeping bags for all ${P}` + (a.tent === "yes" ? ", and a tent for the warm room." : ".") : "Sleeping warm: not everyone has a warm sleeping bag yet.",
      a.sleep === "all" ? `Warm schlafen: Schlafsäcke für alle ${P}` + (a.tent === "yes" ? ", und ein Zelt für den warmen Raum." : ".") : "Warm schlafen: noch nicht alle haben einen warmen Schlafsack.");
   // power reservoir
@@ -264,13 +281,15 @@ function caps(a) {
                 `Powerstation: ${fmtN(wh)} Wh ≈ ${Math.round(wh * 0.85 / 15)} Handyladungen oder etwa ${Math.round(wh * 0.85 / 5)} Stunden LED-Licht pro Ladung.` + (solarDay ? ` Das Panel bringt an einem Wintertag etwa ${fmtN(solarDay)} Wh, bei Sonne mehr.` : ""));
   if (wh && wh < 1500) ok(false, "Cooking on electricity: an induction plate needs about 2 kW, too much for this power station.", "Elektrisch kochen: ein Induktionsfeld braucht etwa 2 kW, zu viel für diese Powerstation.");
   // cooking, water, food, info, cash
-  const cookTxt = { gas: ["gas hob", "Gasherd"], camping: ["camping stove", "Campingkocher"], wood: ["rocket or wood stove", "Raketen- oder Holzofen"] }[a.cook];
+  const CT = { gas: ["gas hob", "Gasherd"], camping: ["camping stove", "Campingkocher"], wood: ["rocket or wood stove", "Raketen- oder Holzofen"] };
+  const cs = arr(a.cook).filter(x => CT[x]), cookTxt = cs.length ? [cs.map(x => CT[x][0]).join(", "), cs.map(x => CT[x][1]).join(", ")] : null;
   ok(!!cookTxt, cookTxt ? `Cooking without power: ${cookTxt[0]}.` : "Cooking without power: not possible yet. Oats, tins and nuts need no fire.", cookTxt ? `Kochen ohne Strom: ${cookTxt[1]}.` : "Kochen ohne Strom: noch nicht möglich. Haferflocken, Konserven und Nüsse brauchen kein Feuer.");
-  const d = Math.floor(n("water_l") / (P * 2)), tr = a.treat === "filter";
-  ok(d >= 14 || tr, `Water: ${n("water_l")} L stored ≈ ${d} days for ${P}.` + (tr ? " The filter makes rain or well water drinkable after that." : " Nothing to make other water safe."), `Wasser: ${n("water_l")} L Vorrat ≈ ${d} Tage für ${P}.` + (tr ? " Danach macht der Filter Regen- oder Brunnenwasser trinkbar." : " Nichts, um anderes Wasser trinkbar zu machen."));
+  const d = Math.floor(n("water_l") / (P * 2)), tr = has(a, "treat", "filter", "tabs");
+  ok(d >= 14 || tr, `Water: ${n("water_l")} L stored ≈ ${d} days for ${P}.` + (tr ? " After that, filter or tablets make rain or well water drinkable." : " Nothing to make other water safe."), `Wasser: ${n("water_l")} L Vorrat ≈ ${d} Tage für ${P}.` + (tr ? " Danach machen Filter oder Tabletten Regen- oder Brunnenwasser trinkbar." : " Nichts, um anderes Wasser trinkbar zu machen."));
   const f = +a.food || 0;
   ok(f >= GOAL, `Food: about ${f} days at normal eating, about ${Math.round(f * 1.3)} if adults eat less.`, `Essen: etwa ${f} Tage bei normalem Essen, etwa ${Math.round(f * 1.3)}, wenn Erwachsene weniger essen.`);
   ok(a.radio === "yes", a.radio === "yes" ? "News: radio works without the phone network." : "News: no radio, so no news once the phone network is down.", a.radio === "yes" ? "Nachrichten: das Radio geht auch ohne Handynetz." : "Nachrichten: kein Radio, also keine Nachrichten, wenn das Handynetz weg ist.");
+  ok(has(a, "safety", "co"), has(a, "safety", "co") ? "CO alarm: in place, so the stove in the warm room is watched." : "CO alarm: missing. Get one before you light any stove indoors.", has(a, "safety", "co") ? "CO-Melder: vorhanden, der Ofen im warmen Raum ist überwacht." : "CO-Melder: fehlt. Vor dem ersten Ofen drinnen besorgen.");
   ok(a.cash === "enough", a.cash === "enough" ? "Cash: enough at home." : "Cash: not enough at home; cards and ATMs stop with the power.", a.cash === "enough" ? "Bargeld: genug zu Hause." : "Bargeld: zu wenig zu Hause; Karten und Automaten fallen mit dem Strom aus.");
   return out;
 }
@@ -290,6 +309,7 @@ const STORES = {
 };
 const STORE_ORDER = ["bank", "super", "drug", "pharm", "hard", "outdoor", "elec", "call", "home", "people"];
 function errands(a, links) {
+  a = normalize({ ...a });
   const n = k => +a[k] || 0, adults = Math.max(1, n("adults")), kids = n("kids"), P = adults + kids;
   const F = adults + kids * 0.7, f = +a.food || 0, miss = Math.max(0, GOAL - f) / GOAL;
   const kg = per => Math.max(1, Math.ceil(per * F * miss));
@@ -300,7 +320,7 @@ function errands(a, links) {
     "w-room": [["home", "Choose the warm room; lay a blanket ready for its window", "Den warmen Raum festlegen; eine Decke fürs Fenster bereitlegen"]],
     "w-wood": [["call", "Order dry firewood for 4 weeks", "Trockenes Brennholz für 4 Wochen bestellen"]],
     "p-plug": [["call", a.tenure === "rent" ? "Landlord: ask for an electrician to fit a plug or changeover switch on the boiler" : "Electrician: appointment to fit a plug or changeover switch on the boiler", a.tenure === "rent" ? "Vermieter: Elektrofachkraft für Stecker oder Umschalter an der Heizung anfragen" : "Elektrofachkraft: Termin für Stecker oder Umschalter an der Heizung"]],
-    "p-station": [["elec", "Power station about 1 kWh, pure-sine 230 V" + (a.car === "ev" ? ", plus its 12 V car charging cable" : ""), "Powerstation etwa 1 kWh, reiner Sinus 230 V" + (a.car === "ev" ? ", dazu das 12-V-Ladekabel fürs Auto" : "")]],
+    "p-station": [["elec", "Power station about 1 kWh, pure-sine 230 V" + (has(a, "car", "ev", "v2l") ? ", plus its 12 V car charging cable" : ""), "Powerstation etwa 1 kWh, reiner Sinus 230 V" + (has(a, "car", "ev", "v2l") ? ", dazu das 12-V-Ladekabel fürs Auto" : "")]],
     "p-recharge": [["elec", "Foldable solar panel 100–200 W that fits the power station's input", "Faltbares Solarpanel 100–200 W, passend zum Eingang der Powerstation"]],
     "h-filter": [["outdoor", "Water filter (hollow fibre)", "Wasserfilter (Hohlfaser)"], ["pharm", "Water disinfection tablets", "Tabletten zur Wasserentkeimung"]],
     "h-store": [["hard", `Food-grade water canisters, 10–20 L, for ${water} L`, `Lebensmittelechte Wasserkanister, 10–20 L, für ${water} L`], ["home", `Fill the canisters with tap water (${water} L), label with the date`, `Kanister mit Leitungswasser füllen (${water} L), mit Datum beschriften`]],
@@ -315,8 +335,8 @@ function errands(a, links) {
     "l-radio": [["elec", "Crank or battery radio", "Kurbel- oder Batterieradio"]],
     "l-bank": [["elec", "Power bank 20,000 mAh", "Powerbank 20.000 mAh"]],
     "l-solar": [["elec", "Small foldable solar panel for power banks", "Kleines faltbares Solarpanel für Powerbanks"]],
-    "g-co": [["hard", "Battery CO alarm (EN 50291) and a fire blanket", "CO-Melder mit Batterie (EN 50291) und eine Löschdecke"]],
-    "g-co2": [["hard", "The missing one: battery CO alarm or fire blanket / 6 L foam extinguisher", "Das Fehlende: CO-Melder mit Batterie oder Löschdecke / 6-L-Schaumlöscher"]],
+    "g-co": [["hard", "Battery CO alarm (EN 50291)", "CO-Melder mit Batterie (EN 50291)"]],
+    "g-fire": [["hard", "Fire blanket or 6 L foam extinguisher", "Löschdecke oder 6-L-Schaumlöscher"]],
     "g-cash": [["bank", `Cash in small notes: at least €${100 * P}`, `Bargeld in kleinen Scheinen: mindestens ${100 * P} €`]],
     "m-kit": [["pharm", "First-aid kit (a car kit is a good start)", "Verbandkasten (ein Kfz-Verbandkasten reicht für den Anfang)"], ["call", "Book a first-aid course", "Erste-Hilfe-Kurs buchen"]],
     "m-course": [["call", "Book a first-aid course", "Erste-Hilfe-Kurs buchen"]],
